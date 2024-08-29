@@ -1,0 +1,29 @@
+#
+#  inparam.advanced.yaml
+#  AxiSEM3D
+#
+#  Created by Kuangdai Leng on 8/31/19.
+#  Copyright © 2019 Kuangdai Leng. All rights reserved.
+#
+
+#  This is an AxiSEM3D input parameter file for
+#  Advanced Settings
+
+
+##################### verbose #####################
+verbose:
+    # what: level of detail for stdout
+    # type: string
+    # choices: none / essential / detailed
+    level: detailed
+    
+    # what: show/hide runtime warnings
+    # type: bool
+    warnings: true
+
+
+##################### developers #####################
+develop:
+    # what: enable/disable preloop diagnosis
+    # type: bool
+    diagnose_preloop: true

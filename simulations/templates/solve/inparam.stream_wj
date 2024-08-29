@@ -1,0 +1,10 @@
+NUM_IN_ELEM              __NUM_IN_ELEM__
+IN_ELEM_TAGS             __IN_ELEM_TAGS__
+IN_ELEM_R0               __IN_ELEM_R0__
+IN_ELEM_R1               __IN_ELEM_R1__
+IN_ELEM_T1               __IN_ELEM_T1__
+DIST_TOL                 20
+INFO_ONLY                __INFO_ONLY__
+STF_NC_FILE              ../../@@_stf_3d/output/injection_SOLID.nc ../../@@_stf_3d/output/injection_FLUID.nc
+STF_ALIGNED              0
+STF_BUFFER_SIZE          1000

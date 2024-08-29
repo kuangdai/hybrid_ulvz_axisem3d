@@ -1,0 +1,10 @@
+# using a fictitious earthquake with ULVZ location and zero Mij
+latitude:       __ULVZ_LAT__
+longitude:      __ULVZ_LON__
+depth:          1.
+Mrr:            0.
+Mtt:            0.
+Mpp:            0.
+Mrt:            0.
+Mrp:            0.
+Mtp:            0.
