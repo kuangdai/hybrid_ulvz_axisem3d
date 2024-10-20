@@ -32,7 +32,7 @@ if __name__ == "__main__":
     files = [item for item in Path(f'outputs/{run_name}').rglob('*') if item.is_file()]
     for fname in files:
         fname = str(fname)
-        if fname.endswith('.e') or fname.endswith('.png') or fname.startswith('STATIONS'):
+        if fname.endswith('.e') or fname.endswith('.png') or fname.endswith('.nc') or fname.startswith('STATIONS'):
             continue
         with open(fname, 'r') as fs:
             text = fs.read()
