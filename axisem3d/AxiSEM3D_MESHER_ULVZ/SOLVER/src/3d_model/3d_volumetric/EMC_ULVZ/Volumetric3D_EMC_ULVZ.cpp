@@ -17,10 +17,10 @@
 #include <boost/lexical_cast.hpp>
 #include <algorithm>
 
-bool compareFunc(const std::pair<std::string, float> &a, 
-    const std::pair<std::string, float> &b) {
-    return a.second < b.second;
-}
+//bool compareFunc(const std::pair<std::string, float> &a,
+//    const std::pair<std::string, float> &b) {
+//    return a.second < b.second;
+//}
 
 void Volumetric3D_EMC_ULVZ::initialize() {
     // meta data
