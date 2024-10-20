@@ -35,13 +35,18 @@ if __name__ == "__main__":
                      '__STATIONS__': 'STATIONS_ARRAY'})
 
     # ULVZ.txt
-    layers = args['ulvz']['layers']
-    replace_in_file('templates/mesh/ULVZ_true.txt',
-                    {'__N_LAYER__': len(layers),
-                     '__LAYERS__': '\n'.join(layers),
-                     '__TMIN__': 0,
-                     '__TMAX__': np.pi / args_mesh['NEX'] * args_mesh['NEX_U']},
-                    dest=input_dir / 'ULVZ.txt')
+    if args['ulvz']['nc_3d']:
+        os.system(f'cp templates/mesh/ULVZ_false.txt {input_dir}/ULVZ.txt')
+        os.system(f'cp {input_dir}/inparam_nc_3d.model {input_dir}/inparam.model')
+        os.system(f'cp inputs/{run_name}/ulvz.nc {input_dir}/')
+    else:
+        layers = args['ulvz']['layers']
+        replace_in_file('templates/mesh/ULVZ_true.txt',
+                        {'__N_LAYER__': len(layers),
+                         '__LAYERS__': '\n'.join(layers),
+                         '__TMIN__': 0,
+                         '__TMAX__': np.pi / args_mesh['NEX'] * args_mesh['NEX_U']},
+                        dest=input_dir / 'ULVZ.txt')
 
     # CMTSOLUTION
     args_stations = json.load(open(f'outputs/{run_name}/@@_stations/args.json'))

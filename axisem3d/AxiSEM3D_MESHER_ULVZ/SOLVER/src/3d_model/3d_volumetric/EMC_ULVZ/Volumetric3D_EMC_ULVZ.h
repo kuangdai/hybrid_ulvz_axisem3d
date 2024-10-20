@@ -1,4 +1,4 @@
-// Volumetric3D_EMC.h
+// Volumetric3D_EMC_ULVZ.h
 // created by Kuangdai on 16-May-2017 
 // genetral Volumetric3D model with IRIS-EMC format
 
@@ -7,7 +7,7 @@
 #include "Volumetric3D.h"
 #include "eigenp.h"
 
-class Volumetric3D_EMC: public Volumetric3D {
+class Volumetric3D_EMC_ULVZ: public Volumetric3D {
 public:
 
     void initialize();
@@ -23,6 +23,12 @@ public:
         std::vector<double> &values) const;    
         
     std::string verbose() const;
+
+    void setSourceLocation(double srcLat, double srcLon, double srcDep) {
+        mSrcLat = srcLat;
+        mSrcLon = srcLon;
+        mSrcDep = srcDep;
+    };
     
 private:
     
@@ -37,12 +43,11 @@ private:
     // factor
     double mFactor = 1.0;
     
-    // use geocentric or geographic
-    bool mGeographic = false;
-    
-    // one-file-per-depth format
-    bool mOneFilePerDepth = false;
-    
+    // source-centered
+    double mSrcLat = 0.;
+    double mSrcLon = 0.;
+    double mSrcDep = 0.;
+
     // consider vertical disc or not
     bool mVerticalDiscontinuities = true;
     
