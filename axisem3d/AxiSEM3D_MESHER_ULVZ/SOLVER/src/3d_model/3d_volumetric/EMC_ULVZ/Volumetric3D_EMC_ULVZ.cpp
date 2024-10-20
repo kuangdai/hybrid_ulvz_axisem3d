@@ -279,7 +279,6 @@ std::string Volumetric3D_EMC_ULVZ::verbose() const {
     ss << "  Theta Range          =   [" << mGridLat.minCoeff() << ", " << mGridLat.maxCoeff() << "]" << std::endl;
     ss << "  Phi Range            =   [" << mGridLon.minCoeff() << ", " << mGridLon.maxCoeff() << "]" << std::endl;
     ss << "  Factor               =   " << mFactor << std::endl;
-    ss << "  One File per Depth   =   " << (mOneFilePerDepth ? "YES" : "NO") << std::endl;
     if (!boost::iequals(mModelFlag, "none")) {
         ss << "  Special Model Flag   =   " << mModelFlag << std::endl;
         ss << "  Model Flag Factor    =   " << mModelFlagFactor << std::endl;

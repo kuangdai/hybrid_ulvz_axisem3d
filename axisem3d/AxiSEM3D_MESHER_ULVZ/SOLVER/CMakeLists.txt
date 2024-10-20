@@ -326,7 +326,7 @@ add_executable(
     src/3d_model/3d_volumetric/simple_shapes/Volumetric3D_bubble.cpp
     src/3d_model/3d_volumetric/simple_shapes/Volumetric3D_cylinder.cpp
     src/3d_model/3d_volumetric/EMC/Volumetric3D_EMC.cpp
-    src/3d_model/3d_volumetric/EMC/Volumetric3D_EMC_ULVZ.cpp
+    src/3d_model/3d_volumetric/EMC_ULVZ/Volumetric3D_EMC_ULVZ.cpp
 
     src/3d_model/3d_geometric/Geometric3D.cpp
     src/3d_model/3d_geometric/ellipticity/Ellipticity.cpp
