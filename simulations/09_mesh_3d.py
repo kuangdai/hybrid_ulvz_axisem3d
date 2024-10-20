@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # ULVZ.txt
     if args['ulvz']['nc_3d']:
         os.system(f'cp templates/mesh/ULVZ_false.txt {input_dir}/ULVZ.txt')
-        os.system(f'cp {input_dir}/inparam_nc_3d.model {input_dir}/inparam.model')
+        os.system(f'cp {input_dir}/inparam.nc_3d_model {input_dir}/inparam.model')
         os.system(f'cp inputs/{run_name}/ulvz.nc {input_dir}/')
     else:
         layers = args['ulvz']['layers']
