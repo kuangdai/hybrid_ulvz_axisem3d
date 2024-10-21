@@ -24,9 +24,9 @@ MODEL_1D_EXODUS_MESH_FILE                   ../../@@_exodus/mesh.e
 # NOTE: Use the first MODEL_3D_VOLUMETRIC_NUM models in MODEL_3D_VOLUMETRIC_LIST
 #       while ingoring the rest.
 MODEL_3D_VOLUMETRIC_NUM                     3
-emc_ulvz ulvz.nc$vs$VS$Ref1D
-emc_ulvz ulvz.nc$vp$VP$Ref1D
-emc_ulvz ulvz.nc$rho$RHO$Ref1D
+MODEL_3D_VOLUMETRIC_LIST emc_ulvz$ulvz.nc$vs$VS$Ref1D
+MODEL_3D_VOLUMETRIC_LIST emc_ulvz$ulvz.nc$vp$VP$Ref1D
+MODEL_3D_VOLUMETRIC_LIST emc_ulvz$ulvz.nc$rho$RHO$Ref1D
 
 
 # WHAT: number of geometric 3D models

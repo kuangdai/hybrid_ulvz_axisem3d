@@ -177,6 +177,22 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
     refTypes = std::vector<MaterialRefType>(1, mReferenceType);
     values = std::vector<double>(1, 0.);
 
+    // check center
+    double dmin = mGridDep[0];
+    double dmax = mGridDep[mGridDep.size() - 1];
+    double dcenter = rElemCenter;
+    if (dcenter < dmin || dcenter > dmax) {
+        return false;
+    }
+
+    // check center
+    double lmin = mGridLat[0];
+    double lmax = mGridLat[mGridLat.size() - 1];
+    double lcenter = thetaElemCenter / degree;
+    if (lcenter < lmin || lcenter > lmax) {
+        return false;
+    }
+
     // source centered
     RDCol3 rtpGlob;
     rtpGlob(0) = r;
@@ -190,13 +206,6 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
     XMath::checkLimits(lat, 0., 180.);
     XMath::checkLimits(lon, 0., 360.);
 
-    // check center
-    double dmin = mGridDep[0];
-    double dmax = mGridDep[mGridDep.size() - 1];
-    double dcenter = rElemCenter;
-    if (dcenter < dmin || dcenter > dmax) {
-        return false;
-    }
     if (dep < dmin && dep > dmin * 0.999999) {
         dep = dmin;
     }
@@ -204,13 +213,6 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
         dep = dmax;
     }
     
-    // check center
-    double lmin = mGridLat[0];
-    double lmax = mGridLat[mGridLat.size() - 1];
-    double lcenter = thetaElemCenter / degree;
-    if (lcenter < lmin || lcenter > lmax) {
-        return false;
-    }
     if (lon < lmin && lon > lmin * 0.999999) {
         lon = lmin;
     }
