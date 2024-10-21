@@ -36,7 +36,7 @@ def to_station_file(grid_depth, media, grid_dist_, grid_azim_, cen_lat, cen_lon,
                 for i_azim_, _ in enumerate(grid_azim_):
                     fstream.write('%s %s %.18f %.18f 0 %.18f force_%s\n' % (
                         'ULVZ_%d_%d_%d' % (i_dist_, i_depth_, i_azim_),
-                        f'INCIDENT_{media.upper()}',
+                        f'{wave_name}_{media.upper()}',
                         st_lat_[i_dist_, i_depth_, i_azim_],
                         st_lon_[i_dist_, i_depth_, i_azim_],
                         st_dep_[i_dist_, i_depth_, i_azim_] * 1e3,
