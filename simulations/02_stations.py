@@ -18,12 +18,12 @@ def reshape(*grids, grid_shape):
     return [g.reshape(grid_shape) for g in grids]
 
 
-def to_station_file(grid_depth, media, grid_azim_, wave_name="INCIDENT"):
+def to_station_file(grid_depth, media, grid_dist_, grid_azim_, cen_lat, cen_lon, wave_name):
     # compute lld
     (g_dist, g_depth, g_azim), grid_shape = coords_to_grids(
-        grid_dist, grid_depth, grid_azim_)
+        grid_dist_, grid_depth, grid_azim_)
     st_points = GeoPoints.create_rtp_src_centered(
-        np.array([6371. - g_depth, g_dist, g_azim]).T, e_lat, e_lon)
+        np.array([6371. - g_depth, g_dist, g_azim]).T, cen_lat, cen_lon)
     st_lat_ = st_points.lld[:, 0]
     st_lon_ = st_points.lld[:, 1]
     st_dep_ = st_points.lld[:, 2]
@@ -31,7 +31,7 @@ def to_station_file(grid_depth, media, grid_azim_, wave_name="INCIDENT"):
                                         grid_shape=grid_shape)
     # write
     with open(out_dir / f'STATIONS_{wave_name}_{media.upper()}', 'w') as fstream:
-        for i_dist_, _ in enumerate(grid_dist):
+        for i_dist_, _ in enumerate(grid_dist_):
             for i_depth_, _ in enumerate(grid_depth):
                 for i_azim_, _ in enumerate(grid_azim_):
                     fstream.write('%s %s %.18f %.18f 0 %.18f force_%s\n' % (
@@ -178,8 +178,8 @@ if __name__ == "__main__":
     np.savetxt(out_dir / 'grid_azim.txt', grid_azim)
 
     # write stations
-    to_station_file(grid_depth_solid, 'solid', grid_azim)
-    to_station_file(grid_depth_fluid, 'fluid', grid_azim)
+    to_station_file(grid_depth_solid, 'solid', grid_dist, grid_azim, e_lat, e_lon, "INCIDENT")
+    to_station_file(grid_depth_fluid, 'fluid', grid_dist, grid_azim, e_lat, e_lon, "INCIDENT")
 
     # final combination
     fout = open(out_dir / 'STATIONS_ARRAY_INCIDENT', 'w')
@@ -231,10 +231,13 @@ if __name__ == "__main__":
     # wave extrapolation #
     ######################
     if args['array']['wave_extrapolation']:
-        grid_azim_WE = np.radians(np.arange(0, 360, 2 * args_mesh['nu_to_use']) * 1.)
+        n_dist = int(np.ceil(dist_half_range / dist_delta)) + 1
+        grid_dist_WE = np.linspace(0, dist_half_range, n_dist)
+        grid_azim_WE = np.radians(np.linspace(0, 360, 2 * args_mesh['nu_to_use'] + 1)[:-1] * 1.)
+        to_station_file(grid_depth_solid, 'solid', grid_dist_WE, grid_azim_WE, u_lat, u_lon, "EXTRAPOLATION")
+        to_station_file(grid_depth_fluid, 'fluid', grid_dist_WE, grid_azim_WE, u_lat, u_lon, "EXTRAPOLATION")
+        np.savetxt(out_dir / 'grid_dist_extrapolation.txt', grid_dist_WE)
         np.savetxt(out_dir / 'grid_azim_extrapolation.txt', grid_azim_WE)
-        to_station_file(grid_depth_solid, 'solid', grid_azim_WE, "EXTRAPOLATION")
-        to_station_file(grid_depth_fluid, 'fluid', grid_azim_WE, "EXTRAPOLATION")
         fout = open(out_dir / 'STATIONS_ARRAY_EXTRAPOLATION', 'w')
         fin = open(out_dir / 'STATIONS_ARRAY')
         fout.write(fin.read())
