@@ -164,7 +164,7 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
         "Deprecated.");
 }
 
-
+#include <iostream>
 
 bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, double rElemCenter,
     double thetaElemCenter,
@@ -200,8 +200,8 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
     rtpGlob(2) = phi;
     RDCol3 rtpSrc = Geodesy::rotateGlob2Src(rtpGlob, mSrcLat, mSrcLon, mSrcDep);
     double dep = r;
-    double lat = theta / degree;
-    double lon = phi / degree;
+    double lat = rtpSrc[1] / degree;
+    double lon = rtpSrc[2] / degree;
     XMath::checkLimits(dep, 0., Geodesy::getROuter());
     XMath::checkLimits(lat, 0., 180.);
     XMath::checkLimits(lon, 0., 360.);
@@ -263,6 +263,12 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
     values[0] += mGridData[ldep1](llat1, llon0) * wdep1 * wlat1 * wlon0;
     values[0] += mGridData[ldep1](llat0, llon1) * wdep1 * wlat0 * wlon1;
     values[0] += mGridData[ldep1](llat1, llon1) * wdep1 * wlat1 * wlon1;
+//
+//if (mMaterialProp==MaterialProperty::VS){
+//    std::cout<<dep<<" "<<lat<<" "<<lon<<" "<<rElemCenter/1000<<" "<< thetaElemCenter/degree
+//    << " "<<MaterialPropertyString[mMaterialProp] <<" "<<values[0]<<"\n";
+//}
+
     return true;
 }
 
