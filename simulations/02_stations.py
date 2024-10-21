@@ -18,10 +18,10 @@ def reshape(*grids, grid_shape):
     return [g.reshape(grid_shape) for g in grids]
 
 
-def to_station_file(grid_depth, media):
+def to_station_file(grid_depth, media, grid_azim_, wave_name="INCIDENT"):
     # compute lld
     (g_dist, g_depth, g_azim), grid_shape = coords_to_grids(
-        grid_dist, grid_depth, grid_azim)
+        grid_dist, grid_depth, grid_azim_)
     st_points = GeoPoints.create_rtp_src_centered(
         np.array([6371. - g_depth, g_dist, g_azim]).T, e_lat, e_lon)
     st_lat_ = st_points.lld[:, 0]
@@ -30,10 +30,10 @@ def to_station_file(grid_depth, media):
     st_lat_, st_lon_, st_dep_ = reshape(st_lat_, st_lon_, st_dep_,
                                         grid_shape=grid_shape)
     # write
-    with open(out_dir / f'STATIONS_INCIDENT_{media.upper()}', 'w') as fstream:
+    with open(out_dir / f'STATIONS_{wave_name}_{media.upper()}', 'w') as fstream:
         for i_dist_, _ in enumerate(grid_dist):
             for i_depth_, _ in enumerate(grid_depth):
-                for i_azim_, _ in enumerate(grid_azim):
+                for i_azim_, _ in enumerate(grid_azim_):
                     fstream.write('%s %s %.18f %.18f 0 %.18f force_%s\n' % (
                         'ULVZ_%d_%d_%d' % (i_dist_, i_depth_, i_azim_),
                         f'INCIDENT_{media.upper()}',
@@ -178,8 +178,8 @@ if __name__ == "__main__":
     np.savetxt(out_dir / 'grid_azim.txt', grid_azim)
 
     # write stations
-    to_station_file(grid_depth_solid, 'solid')
-    to_station_file(grid_depth_fluid, 'fluid')
+    to_station_file(grid_depth_solid, 'solid', grid_azim)
+    to_station_file(grid_depth_fluid, 'fluid', grid_azim)
 
     # final combination
     fout = open(out_dir / 'STATIONS_ARRAY_INCIDENT', 'w')
@@ -226,3 +226,36 @@ if __name__ == "__main__":
     s_lon = s_data[:, 3].astype(float)
     m.scatter(s_lon, s_lat, c='green', s=1, marker='v', linewidth=1)
     plt.savefig(out_dir / 'map_incident.png', bbox_inches='tight', pad_inches=0.0)
+
+    ######################
+    # wave extrapolation #
+    ######################
+    if args['array']['wave_extrapolation']:
+        grid_azim_WE = np.radians(np.arange(0, 360, 2 * args_mesh['nu_to_use']) * 1.)
+        np.savetxt(out_dir / 'grid_azim_extrapolation.txt', grid_azim_WE)
+        to_station_file(grid_depth_solid, 'solid', grid_azim_WE, "EXTRAPOLATION")
+        to_station_file(grid_depth_fluid, 'fluid', grid_azim_WE, "EXTRAPOLATION")
+        fout = open(out_dir / 'STATIONS_ARRAY_EXTRAPOLATION', 'w')
+        fin = open(out_dir / 'STATIONS_ARRAY')
+        fout.write(fin.read())
+        fin = open(out_dir / 'STATIONS_EXTRAPOLATION_SOLID')
+        fout.write(fin.read())
+        fin = open(out_dir / 'STATIONS_EXTRAPOLATION_FLUID')
+        fout.write(fin.read())
+        fout.close()
+        # plot
+        plt.figure(dpi=200)
+        m = Basemap(projection='cyl', llcrnrlat=-90, urcrnrlat=90,
+                    llcrnrlon=0, urcrnrlon=360, resolution='c')
+        m.drawcoastlines()
+        m.fillcontinents(color='ivory', lake_color='lightblue')
+        m.drawmapboundary(fill_color='lightblue')
+        m.scatter(e_lon, e_lat, c='red', s=50, marker='*')
+        m.scatter(u_lon, u_lat, c='orange', s=200)
+        m.scatter(u_lon_far, u_lat_far, c='blue', s=10, marker='+')
+        m.scatter(u_lon_near, u_lat_near, c='blue', s=10, marker='+')
+        s_data = np.loadtxt(out_dir / f'STATIONS_EXTRAPOLATION_FLUID', dtype=str)
+        s_lat = s_data[:, 2].astype(float)
+        s_lon = s_data[:, 3].astype(float)
+        m.scatter(s_lon, s_lat, c='green', s=1, marker='v', linewidth=1)
+        plt.savefig(out_dir / 'map_extrapolation.png', bbox_inches='tight', pad_inches=0.0)

@@ -28,11 +28,18 @@ if __name__ == "__main__":
                     {'__NU__': args_mesh['nu_to_use']})
 
     # inparam.time_src_recv
-    replace_in_file(input_dir / 'inparam.time_src_recv',
-                    {'__DT__': args['time_series']['dt'],
-                     '__LENGTH__': args['time_series']['length'],
-                     '__SAMPLE__': args['time_series']['sample_interval'],
-                     '__STATIONS__': 'STATIONS_ARRAY'})
+    if args['array']['wave_extrapolation']:
+        replace_in_file(input_dir / 'inparam.time_src_recv',
+                        {'__DT__': args['time_series']['dt'],
+                         '__LENGTH__': args['time_series']['length'],
+                         '__SAMPLE__': args['time_series']['sample_interval'],
+                         '__STATIONS__': 'STATIONS_ARRAY_EXTRAPOLATION'})
+    else:
+        replace_in_file(input_dir / 'inparam.time_src_recv',
+                        {'__DT__': args['time_series']['dt'],
+                         '__LENGTH__': args['time_series']['length'],
+                         '__SAMPLE__': args['time_series']['sample_interval'],
+                         '__STATIONS__': 'STATIONS_ARRAY'})
 
     # ULVZ.txt
     if args['ulvz']['nc_3d']:

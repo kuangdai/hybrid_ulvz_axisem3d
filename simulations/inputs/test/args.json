@@ -22,6 +22,7 @@
   },
   "array": {
     "use_grid": true,
+    "wave_extrapolation": true,
     "dist0_from_event": 35.0,
     "dist1_from_event": 45.0,
     "delta_dist": 1,
