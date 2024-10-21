@@ -18,8 +18,11 @@ if __name__ == "__main__":
     input_dir.mkdir(parents=True, exist_ok=True)
     os.system(f'cp templates/solve/*.e {input_dir}/')
     os.system(f'cp templates/solve/*.yaml {input_dir}/')
-    os.system(f'cp templates/solve/inparam.stream_3d {input_dir}/inparam.stream')
     os.system(f'cp templates/solve/inparam.stream_wj {input_dir}/')
+    if args["array"]["wave_extrapolation"]:
+        os.system(f'cp templates/solve/inparam.stream_3d_extrapolation {input_dir}/inparam.stream')
+    else:
+        os.system(f'cp templates/solve/inparam.stream_3d {input_dir}/inparam.stream')
 
     # inparam.stream
     replace_in_file(input_dir / 'inparam.stream',
