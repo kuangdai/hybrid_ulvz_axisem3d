@@ -217,8 +217,8 @@ if __name__ == "__main__":
 
     # ulvz
     m.scatter(u_lon, u_lat, c='orange', s=200)
-    m.scatter(u_lon_far, u_lat_far, c='blue', s=10, marker='+')
-    m.scatter(u_lon_near, u_lat_near, c='blue', s=10, marker='+')
+    m.scatter(u_lon_far, u_lat_far, c='blue', s=10, marker='+', zorder=100)
+    m.scatter(u_lon_near, u_lat_near, c='blue', s=10, marker='+', zorder=100)
 
     # stations
     s_data = np.loadtxt(out_dir / f'STATIONS_INCIDENT_FLUID', dtype=str)
@@ -255,8 +255,8 @@ if __name__ == "__main__":
         m.drawmapboundary(fill_color='lightblue')
         m.scatter(e_lon, e_lat, c='red', s=50, marker='*')
         m.scatter(u_lon, u_lat, c='orange', s=200)
-        m.scatter(u_lon_far, u_lat_far, c='blue', s=10, marker='+')
-        m.scatter(u_lon_near, u_lat_near, c='blue', s=10, marker='+')
+        m.scatter(u_lon_far, u_lat_far, c='blue', s=10, marker='+', zorder=100)
+        m.scatter(u_lon_near, u_lat_near, c='blue', s=10, marker='+', zorder=100)
         s_data = np.loadtxt(out_dir / f'STATIONS_EXTRAPOLATION_FLUID', dtype=str)
         s_lat = s_data[:, 2].astype(float)
         s_lon = s_data[:, 3].astype(float)
