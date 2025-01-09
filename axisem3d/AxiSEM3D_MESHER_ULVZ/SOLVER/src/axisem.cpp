@@ -254,14 +254,14 @@ int axisem_main(int argc, char *argv[]) {
 
 extern void initializeSolverStatic(int maxNr, bool disableWisdomFFTW) {
     // fftw
-//    SolverFFTW::importWisdom(disableWisdomFFTW);
-//    SolverFFTW_1::initialize(maxNr);
-//    SolverFFTW_3::initialize(maxNr);
-//    SolverFFTW_N3::initialize(maxNr);
-//    SolverFFTW_N6::initialize(maxNr);
-//    SolverFFTW_N9::initialize(maxNr);
-//    SolverFFTW::exportWisdom();
-    // PreloopFFTW::initialize(maxNr);
+    SolverFFTW::importWisdom(disableWisdomFFTW);
+    SolverFFTW_1::initialize(maxNr);
+    SolverFFTW_3::initialize(maxNr);
+    SolverFFTW_N3::initialize(maxNr);
+    SolverFFTW_N6::initialize(maxNr);
+    SolverFFTW_N9::initialize(maxNr);
+    SolverFFTW::exportWisdom();
+    PreloopFFTW::initialize(maxNr);
     // element
     SolidElement::initWorkspace(maxNr / 2);
     FluidElement::initWorkspace(maxNr / 2);
