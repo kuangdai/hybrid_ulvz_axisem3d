@@ -152,18 +152,18 @@ if __name__ == "__main__":
     args_mesh = json.load(open(f'outputs/{run_name}/@@_exodus/args.json'))
     dist_delta = np.pi / (args_mesh['NEX'] * 4)
     dist_half_range = (args_mesh['NEX_U'] + 2) * 4 * dist_delta
-    n_dist = int(np.ceil(dist_half_range * 2 / dist_delta))
+    n_dist = int(np.ceil(dist_half_range * 2 / dist_delta) * 1.2)
+    if n_dist % 2 == 0:
+        n_dist += 1
     grid_dist = np.linspace(u_dist - dist_half_range,
                             u_dist + dist_half_range, n_dist)
 
     # depth sampling
-    depth_delta = args['ulvz']['height'] / (args_mesh['n_elem_layer_ulvz'] * 4)
     height_solid = args['ulvz']['height'] + args['box']['height']
-    n_solid = int(np.ceil(height_solid / depth_delta))
+    n_solid = (args_mesh['n_elem_layer_ulvz'] + 1) * 5 + 1
     grid_depth_solid = np.linspace(2891. - height_solid, 2891., n_solid)
     height_fluid = args['box']['height']
-    n_fluid = int(np.ceil(height_fluid / depth_delta))
-    grid_depth_fluid = np.linspace(2891., 2891. + height_fluid, n_fluid)
+    grid_depth_fluid = np.linspace(2891., 2891. + height_fluid, 5 + 1)
 
     # azimuth sampling
     if args['event']['monopole']:
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     # wave extrapolation #
     ######################
     if args['array']['wave_extrapolation']:
-        n_dist = int(np.ceil(dist_half_range / dist_delta)) + 1
+        n_dist = int(np.ceil(dist_half_range / dist_delta) * 1.2) + 1
         grid_dist_WE = np.linspace(0, dist_half_range, n_dist)
         grid_azim_WE = np.radians(np.linspace(0, 360, 2 * args_mesh['nu_to_use'] + 1)[:-1] * 1.)
         to_station_file(grid_depth_solid, 'solid', grid_dist_WE, grid_azim_WE, u_lat, u_lon, "EXTRAPOLATION")
