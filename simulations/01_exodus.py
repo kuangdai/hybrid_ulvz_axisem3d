@@ -71,10 +71,16 @@ if __name__ == "__main__":
 
     # change vs and find centers of ULVZ elements
     t_cen_ulvz = []
+    n_upper = 0
+    n_lower = 0
     for iq in np.arange(len(connect)):
         if r_cmb * 1e3 < r_cen[iq] < r_cmb * 1e3 + ulvz_height * 1e3:
             t_cen_ulvz.append(t_cen[iq])
             vs[:, iq] /= (1 + dvs)
+        if (r_cmb - box_height) * 1e3 < r_cen[iq] < r_cmb * 1e3:
+            n_lower += 1
+        if (r_cmb + ulvz_height) * 1e3 < r_cen[iq] < (r_cmb + ulvz_height + box_height) * 1e3:
+            n_upper += 1
     t_cen_ulvz = np.array(t_cen_ulvz)
 
     # copy to file
@@ -95,6 +101,7 @@ if __name__ == "__main__":
     theta_tol = np.pi / NEX_surface / 10.
     NEX = len(np.unique(np.round(t_cen_ulvz / theta_tol).astype(int)))
     assert len(t_cen_ulvz) % NEX == 0, f'NEX={NEX}, NE_ULVZ={len(t_cen_ulvz)}'
+    assert n_lower == NEX and n_upper == NEX, f'Only one layer is needed for injection boundary.'
     n_elem_layer_ulvz = len(t_cen_ulvz) // NEX
 
     # box range
