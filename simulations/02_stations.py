@@ -43,6 +43,17 @@ def to_station_file(grid_depth, media, grid_dist_, grid_azim_, cen_lat, cen_lon,
                         media.lower()))
 
 
+def append_tol_grid(grid, tol, left):
+    if left:
+        outer = grid[0] - tol
+        grid[0] += tol
+        return np.concatenate(([outer], grid))
+    else:
+        outer = grid[-1] + tol
+        grid[-1] -= tol
+        return np.concatenate((grid, [outer]))
+
+
 if __name__ == "__main__":
     run_name = sys.argv[1]
     args = json.load(open(f'inputs/{run_name}/args.json'))
@@ -150,20 +161,24 @@ if __name__ == "__main__":
     #####################
     # dist sampling
     args_mesh = json.load(open(f'outputs/{run_name}/@@_exodus/args.json'))
-    dist_delta = np.pi / (args_mesh['NEX'] * 4)
-    dist_half_range = (args_mesh['NEX_U'] + 2) * 4 * dist_delta
-    n_dist = int(np.ceil(dist_half_range * 2 / dist_delta) * 1.2)
-    if n_dist % 2 == 0:
-        n_dist += 1
+    dist_delta_elem = np.pi / args_mesh['NEX']
+    dist_half_range = (args_mesh['NEX_U'] + 2) * dist_delta_elem
+    n_dist = (args_mesh['NEX_U'] + 2) * 2 * 5 + 1
     grid_dist = np.linspace(u_dist - dist_half_range,
                             u_dist + dist_half_range, n_dist)
 
     # depth sampling
-    height_solid = args['ulvz']['height'] + args['box']['height']
-    n_solid = (args_mesh['n_elem_layer_ulvz'] + 1) * 5 + 1
-    grid_depth_solid = np.linspace(2891. - height_solid, 2891., n_solid)
-    height_fluid = args['box']['height']
-    grid_depth_fluid = np.linspace(2891., 2891. + height_fluid, 5 + 1)
+    tolerance = args['ulvz']['height'] / args_mesh['n_elem_layer_ulvz'] / 1000
+    grid_depth_top = np.linspace(2891. - args['ulvz']['height'] - args['box']['height'],
+                                 2891. - args['ulvz']['height'],
+                                 5 * 1 + 1)
+    grid_depth_ulvz = np.linspace(2891. - args['ulvz']['height'],
+                                  2891.,
+                                  args_mesh['n_elem_layer_ulvz'] * 5 + 1)
+    grid_depth_solid = np.concatenate((grid_depth_top[:-1], grid_depth_ulvz))
+    grid_depth_solid = append_tol_grid(grid_depth_solid, tolerance, True)
+    grid_depth_fluid = np.linspace(2891., 2891. + args['box']['height'], 5 * 1 + 1)
+    grid_depth_fluid = append_tol_grid(grid_depth_fluid, tolerance, False)
 
     # azimuth sampling
     if args['event']['monopole']:
@@ -231,8 +246,11 @@ if __name__ == "__main__":
     # wave extrapolation #
     ######################
     if args['array']['wave_extrapolation']:
-        n_dist = int(np.ceil(dist_half_range / dist_delta) * 1.2) + 1
-        grid_dist_WE = np.linspace(0, dist_half_range, n_dist)
+        tolerance_angle = tolerance / 2891.
+        grid_dist_inner = np.linspace(0,
+                                      (args_mesh['NEX_U'] + 1) * dist_delta_elem,
+                                      (args_mesh['NEX_U'] + 1) * 5 + 1)
+        grid_dist_WE = append_tol_grid(grid_dist_inner, tolerance_angle, False)
         grid_azim_WE = np.radians(np.linspace(0, 360, 2 * args_mesh['nu_to_use'] + 1)[:-1] * 1.)
         to_station_file(grid_depth_solid, 'solid', grid_dist_WE, grid_azim_WE, u_lat, u_lon, "EXTRAPOLATION")
         to_station_file(grid_depth_fluid, 'fluid', grid_dist_WE, grid_azim_WE, u_lat, u_lon, "EXTRAPOLATION")
