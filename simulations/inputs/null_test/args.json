@@ -14,11 +14,12 @@
     "nc_3d": false
   },
   "box": {
-    "height": 45
+    "height": 30
   },
   "mesh": {
     "period": 10,
-    "epw": 1.0
+    "epw": 1.0,
+    "refinement_dvs": -0.5
   },
   "array": {
     "use_grid": false,
@@ -36,7 +37,7 @@
   "time_series": {
     "dt": 0.0,
     "length": 1000.0,
-    "sample_interval": 10
+    "sample_interval": 5
   },
   "slurm": {
     "hpc": "local",
