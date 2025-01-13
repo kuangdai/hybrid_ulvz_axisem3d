@@ -23,8 +23,10 @@ if __name__ == "__main__":
     box_height = args['box']['height']
     # max velocity reduction
     layers = args['ulvz']['layers']
-    dvs = np.min(np.array([layer.split(' ')[1] for layer in layers]).astype(float))
-    vs_coefficients_ulvz = np.array([6.9254, 1.4672, -2.0834, 0.9783]) * (1 + dvs)
+    refinement_dvs = np.min(np.array([layer.split(' ')[1] for layer in layers]).astype(float))
+    if 'refinement_dvs' in args['mesh']:
+        refinement_dvs = args['mesh']['refinement_dvs']
+    vs_coefficients_ulvz = np.array([6.9254, 1.4672, -2.0834, 0.9783]) * (1 + refinement_dvs)
     bm_file = out_dir / f"mesh.bm"
     replace_in_file('templates/prem_iso_smooth_ulvz.bm',
                     {'__BOX_BOT__': r_cmb - box_height,
@@ -76,7 +78,7 @@ if __name__ == "__main__":
     for iq in np.arange(len(connect)):
         if r_cmb * 1e3 < r_cen[iq] < r_cmb * 1e3 + ulvz_height * 1e3:
             t_cen_ulvz.append(t_cen[iq])
-            vs[:, iq] /= (1 + dvs)
+            vs[:, iq] /= (1 + refinement_dvs)
         if (r_cmb - box_height) * 1e3 < r_cen[iq] < r_cmb * 1e3:
             n_lower += 1
         if (r_cmb + ulvz_height) * 1e3 < r_cen[iq] < (r_cmb + ulvz_height + box_height) * 1e3:
