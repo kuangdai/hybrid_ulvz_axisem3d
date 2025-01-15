@@ -287,6 +287,7 @@ if __name__ == "__main__":
     if args['ulvz_animation']['enabled']:
         assert not args['wave_extrapolation']['save_outgoing'], \
             "Cannot do animation and wave_extrapolation at the same time."
+        P = args['ulvz_animation']['points_per_elem']
         # back azimuth
         e_pnt = GeoPoints(np.array([[e_lat, e_lon, 0.]]))
         e_rtp = e_pnt.get_rtp_src_centered(u_lat, u_lon)
@@ -295,14 +296,14 @@ if __name__ == "__main__":
         # top view
         dist_inner = (args_mesh['NEX_U'] + 1) * dist_delta_elem
         dist_outer = dist_inner + args_mesh['NEX_U'] * dist_delta_elem * args['ulvz_animation']['top_view_right_margin']
-        n_inner = (args_mesh['NEX_U'] + 1) * 4 + 1
+        n_inner = (args_mesh['NEX_U'] + 1) * P + 1
         n_outer = int(np.ceil((dist_outer - dist_inner) / dist_inner * (n_inner - 1))) + 1
         grid_dist_inner = np.linspace(0, dist_inner, n_inner)
         grid_dist_inner[-1] -= tolerance_angle
         grid_dist_outer = np.linspace(dist_inner, dist_outer, n_outer)
         grid_dist_outer[0] += tolerance_angle
         grid_dist_anim_top = np.concatenate((grid_dist_inner, grid_dist_outer))
-        grid_azim_anim_top = np.radians(np.linspace(0, 360, 2 * args_mesh['nu_to_use'] + 1)[:-1] * 1.)
+        grid_azim_anim_top = np.radians(np.linspace(0, 360, int(np.ceil(2 * args_mesh['nu_to_use'] + 1) * P / 4))[:-1] * 1.)
         grid_azim_anim_top += e_azim
         to_station_file([2891.], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
         to_station_file([2891.], 'fluid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
@@ -312,10 +313,10 @@ if __name__ == "__main__":
         # side view
         grid_depth_top = np.linspace(2891. - args['ulvz']['height'] - args['box']['height'],
                                      2891. - args['ulvz']['height'],
-                                     4 * 1 + 1)
+                                     P * 1 + 1)
         grid_depth_ulvz = np.linspace(2891. - args['ulvz']['height'],
                                       2891.,
-                                      args_mesh['n_elem_layer_ulvz'] * 4 + 1)
+                                      args_mesh['n_elem_layer_ulvz'] * P + 1)
         grid_depth_solid = np.concatenate((grid_depth_top[:-1], grid_depth_ulvz))
         grid_depth_solid[0] += tolerance_length
         top_margin = args['ulvz_animation']['side_view_top_margin'] * args['ulvz']['height']
@@ -327,7 +328,7 @@ if __name__ == "__main__":
             n_top_margin)
         grid_depth_top_margin[-1] -= tolerance_length
         grid_depth_anim_side_solid = np.concatenate((grid_depth_top_margin, grid_depth_solid))
-        grid_depth_fluid = np.linspace(2891., 2891. + args['box']['height'], 4 * 1 + 1)
+        grid_depth_fluid = np.linspace(2891., 2891. + args['box']['height'], P * 1 + 1)
         grid_depth_fluid[-1] -= tolerance_length
         bot_margin = args['ulvz_animation']['side_view_bot_margin'] * args['ulvz']['height']
         n_bot_margin = int(np.ceil(bot_margin / args['box']['height'] * (len(grid_depth_fluid) - 1))) + 1

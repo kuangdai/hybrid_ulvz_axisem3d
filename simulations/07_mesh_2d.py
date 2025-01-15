@@ -30,8 +30,8 @@ if __name__ == "__main__":
                      '__LENGTH__': args['time_series']['length'],
                      '__SAMPLE__': args['time_series']['sample_interval'],
                      '__STATIONS__': 'STATIONS_ARRAY',
-                     '__HDUR__': args['mesh']['period']
-                     if args['time_series']['use_period_for_stf'] else "0.0"})
+                     '__HDUR__': args['time_series']['half_duration_stf']})
+
 
     # ULVZ.txt
     args_stations = json.load(open(f'outputs/{run_name}/@@_stations/args.json'))

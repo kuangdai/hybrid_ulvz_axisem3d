@@ -38,7 +38,8 @@
     "top_view_right_margin": 2.0,
     "side_view_top_margin": 4.0,
     "side_view_bot_margin": 4.0,
-    "sample_interval": 10
+    "sample_interval": 10,
+    "points_per_elem": 4
   },
   "event": {
     "monopole": true
@@ -47,7 +48,7 @@
     "dt": 0.0,
     "length": 1000.0,
     "sample_interval": 5,
-    "use_period_for_stf": true
+    "half_duration_stf": 10.0
   },
   "slurm": {
     "hpc": "local",
