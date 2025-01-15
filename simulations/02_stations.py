@@ -245,7 +245,7 @@ if __name__ == "__main__":
     ######################
     # wave extrapolation #
     ######################
-    if args['array']['wave_extrapolation']:
+    if args['wave_extrapolation']['save_outgoing']:
         tolerance_angle = tolerance / 2891.
         grid_dist_inner = np.linspace(0,
                                       (args_mesh['NEX_U'] + 1) * dist_delta_elem,

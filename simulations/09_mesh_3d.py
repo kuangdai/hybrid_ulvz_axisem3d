@@ -28,7 +28,7 @@ if __name__ == "__main__":
                     {'__NU__': args_mesh['nu_to_use']})
 
     # inparam.time_src_recv
-    if args['array']['wave_extrapolation']:
+    if args['wave_extrapolation']['save_outgoing']:
         replace_in_file(input_dir / 'inparam.time_src_recv',
                         {'__DT__': args['time_series']['dt'],
                          '__LENGTH__': args['time_series']['length'],

@@ -23,13 +23,15 @@
   },
   "array": {
     "use_grid": false,
-    "wave_extrapolation": true,
     "dist0_from_event": 35.0,
     "dist1_from_event": 45.0,
     "delta_dist": 1,
     "azim0_from_ulvz": 0.0,
     "azim1_from_ulvz": 40.0,
     "delta_azim": 5
+  },
+  "wave_extrapolation": {
+    "save_outgoing": true
   },
   "event": {
     "monopole": true

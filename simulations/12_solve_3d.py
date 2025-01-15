@@ -19,7 +19,7 @@ if __name__ == "__main__":
     os.system(f'cp templates/solve/*.e {input_dir}/')
     os.system(f'cp templates/solve/*.yaml {input_dir}/')
     os.system(f'cp templates/solve/inparam.stream_wj {input_dir}/')
-    if args["array"]["wave_extrapolation"]:
+    if args["wave_extrapolation"]["save_outgoing"]:
         os.system(f'cp templates/solve/inparam.stream_3d_extrapolation {input_dir}/inparam.stream')
     else:
         os.system(f'cp templates/solve/inparam.stream_3d {input_dir}/inparam.stream')
