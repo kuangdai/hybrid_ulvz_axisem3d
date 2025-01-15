@@ -33,13 +33,17 @@ if __name__ == "__main__":
                         {'__DT__': args['time_series']['dt'],
                          '__LENGTH__': args['time_series']['length'],
                          '__SAMPLE__': args['time_series']['sample_interval'],
-                         '__STATIONS__': 'STATIONS_ARRAY_EXTRAPOLATION'})
+                         '__STATIONS__': 'STATIONS_ARRAY_EXTRAPOLATION',
+                     '__HDUR__': args['mesh']['period']
+                     if args['time_series']['use_period_for_stf'] else "0.0"})
     else:
         replace_in_file(input_dir / 'inparam.time_src_recv',
                         {'__DT__': args['time_series']['dt'],
                          '__LENGTH__': args['time_series']['length'],
                          '__SAMPLE__': args['time_series']['sample_interval'],
-                         '__STATIONS__': 'STATIONS_ARRAY'})
+                         '__STATIONS__': 'STATIONS_ARRAY',
+                     '__HDUR__': args['mesh']['period']
+                     if args['time_series']['use_period_for_stf'] else "0.0"})
 
     # ULVZ.txt
     if args['ulvz']['nc_3d']:

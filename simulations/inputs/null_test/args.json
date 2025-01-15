@@ -37,7 +37,8 @@
   "time_series": {
     "dt": 0.0,
     "length": 1000.0,
-    "sample_interval": 5
+    "sample_interval": 5,
+    "use_period_for_stf": true
   },
   "slurm": {
     "hpc": "local",

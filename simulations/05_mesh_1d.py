@@ -31,7 +31,9 @@ if __name__ == "__main__":
                     {'__DT__': args['time_series']['dt'],
                      '__LENGTH__': args['time_series']['length'],
                      '__SAMPLE__': args['time_series']['sample_interval'],
-                     '__STATIONS__': 'STATIONS_ARRAY'})
+                     '__STATIONS__': 'STATIONS_ARRAY',
+                     '__HDUR__': args['mesh']['period']
+                     if args['time_series']['use_period_for_stf'] else "0.0"})
 
     # ULVZ.txt
     layers = args['ulvz']['layers']

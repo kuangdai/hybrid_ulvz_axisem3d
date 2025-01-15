@@ -47,7 +47,7 @@ SOURCE_TIME_FUNCTION                        erf
 # NOTE: Use a zero half duration so that the synthetics can be convolved
 #       with any source time function after the simulation;
 #       The half duration in CMTSOLUTION is not used.
-SOURCE_STF_HALF_DURATION                    0.0
+SOURCE_STF_HALF_DURATION                    __HDUR__
 
 
 
