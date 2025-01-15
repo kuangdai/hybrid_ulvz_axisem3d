@@ -36,8 +36,8 @@
   "ulvz_animation": {
     "enabled": true,
     "top_view_right_margin": 2.0,
-    "side_view_top_margin": 4.0,
-    "side_view_bot_margin": 4.0,
+    "side_view_top_margin": 6.0,
+    "side_view_bot_margin": 6.0,
     "sample_interval": 24
   },
   "event": {
