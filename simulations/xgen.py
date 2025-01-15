@@ -3,6 +3,11 @@ import fnmatch
 import sys
 from pathlib import Path
 
+def run_command(command):
+    result = os.system(command)
+    if result != 0:
+        raise RuntimeError(f"Command failed with exit code {result}: {command}")
+
 if __name__ == "__main__":
     run_name = sys.argv[1]
 
@@ -16,17 +21,17 @@ if __name__ == "__main__":
             py_no_name_sort[no] = py_no_name[no]
 
     # run scripts
-    os.system(f'rm -rf outputs/{run_name}')
+    run_command(f'rm -rf outputs/{run_name}')
     for no, name in py_no_name_sort.items():
-        os.system(f'python {no}_{name}.py {run_name}')
+        run_command(f'python {no}_{name}.py {run_name}')
 
     # copy scripts for post-processing
-    os.system('cp {geodetic,seismogram,merge_rotate}.py %s' % f'outputs/{run_name}/')
+    run_command('cp {geodetic,seismogram,merge_rotate}.py %s' % f'outputs/{run_name}/')
 
     # replace @@ folder name
     for no, name in py_no_name_sort.items():
-        os.system(f'mv outputs/{run_name}/@@_{name} '
-                  f'outputs/{run_name}/{no}_{name}')
+        run_command(f'mv outputs/{run_name}/@@_{name} '
+                    f'outputs/{run_name}/{no}_{name}')
 
     # replace @@ inside
     files = [item for item in Path(f'outputs/{run_name}').rglob('*') if item.is_file()]
