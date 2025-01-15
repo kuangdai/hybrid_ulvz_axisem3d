@@ -344,7 +344,7 @@ if __name__ == "__main__":
                         "ANIM_SIDE")
         np.savetxt(out_dir / 'grid_depth_anim_side_solid.txt', grid_depth_anim_side_solid)
         np.savetxt(out_dir / 'grid_depth_anim_side_fluid.txt', grid_depth_anim_side_fluid)
-        np.savetxt(out_dir / 'grid_azim_dist_side.txt', grid_azim_anim_side)
+        np.savetxt(out_dir / 'grid_dist_anim_side.txt', grid_dist_anim_side)
         np.savetxt(out_dir / 'grid_azim_anim_side.txt', grid_azim_anim_side)
 
         # also need more incident
