@@ -31,7 +31,7 @@
     "delta_azim": 5
   },
   "wave_extrapolation": {
-    "save_outgoing": false
+    "save_outgoing": true
   },
   "ulvz_animation": {
     "enabled": false,

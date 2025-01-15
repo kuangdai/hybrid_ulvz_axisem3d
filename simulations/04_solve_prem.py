@@ -16,11 +16,18 @@ if __name__ == "__main__":
     input_dir.mkdir(parents=True, exist_ok=True)
     os.system(f'cp templates/solve/*.e {input_dir}/')
     os.system(f'cp templates/solve/*.yaml {input_dir}/')
-    os.system(f'cp templates/solve/inparam.stream_1d {input_dir}/inparam.stream')
+    if args['ulvz_animation']['enabled']:
+        os.system(f'cp templates/solve/inparam.stream_1d_animation {input_dir}/inparam.stream')
+    else:
+        os.system(f'cp templates/solve/inparam.stream_1d {input_dir}/inparam.stream')
 
     # inparam.stream
     replace_in_file(input_dir / 'inparam.stream',
                     {'__SAMPLE__': args['time_series']['sample_interval']})
+    if args['ulvz_animation']['enabled']:
+        replace_in_file(input_dir / 'inparam.stream',
+                        {'__SAMPLE_ANIMATION__': args['ulvz_animation']['sample_interval']})
+
 
     # job
     nodes = args['slurm']['1d']['nodes']

@@ -21,12 +21,17 @@ if __name__ == "__main__":
     os.system(f'cp templates/solve/inparam.stream_wj {input_dir}/')
     if args["wave_extrapolation"]["save_outgoing"]:
         os.system(f'cp templates/solve/inparam.stream_3d_extrapolation {input_dir}/inparam.stream')
+    elif args['ulvz_animation']['enabled']:
+        os.system(f'cp templates/solve/inparam.stream_3d_animation {input_dir}/inparam.stream')
     else:
         os.system(f'cp templates/solve/inparam.stream_3d {input_dir}/inparam.stream')
 
     # inparam.stream
     replace_in_file(input_dir / 'inparam.stream',
                     {'__SAMPLE__': args['time_series']['sample_interval']})
+    if args['ulvz_animation']['enabled']:
+        replace_in_file(input_dir / 'inparam.stream',
+                        {'__SAMPLE_ANIMATION__': args['ulvz_animation']['sample_interval']})
 
     # inparam.stream_wj
     quad_bound = np.loadtxt(f'outputs/{run_name}/@@_exodus/quad_bound.txt', dtype=int)
