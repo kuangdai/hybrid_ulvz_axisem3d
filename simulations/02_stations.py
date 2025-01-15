@@ -301,13 +301,13 @@ if __name__ == "__main__":
         grid_dist_inner[-1] -= tolerance_angle
         grid_dist_outer = np.linspace(dist_inner, dist_outer, n_outer)
         grid_dist_outer[0] += tolerance_angle
-        grid_dist = np.concatenate((grid_dist_inner, grid_dist_outer))
-        grid_azim = np.radians(np.linspace(0, 360, 2 * args_mesh['nu_to_use'] + 1)[:-1] * 1.)
-        grid_azim += e_azim
-        to_station_file([2891.], 'solid', grid_dist, grid_azim, u_lat, u_lon, "ANIM_TOP")
-        to_station_file([2891.], 'fluid', grid_dist, grid_azim, u_lat, u_lon, "ANIM_TOP")
-        np.savetxt(out_dir / 'grid_dist_anim.txt', grid_dist)
-        np.savetxt(out_dir / 'grid_azim_anim_top.txt', grid_azim)
+        grid_dist_anim_top = np.concatenate((grid_dist_inner, grid_dist_outer))
+        grid_azim_anim_top = np.radians(np.linspace(0, 360, 2 * args_mesh['nu_to_use'] + 1)[:-1] * 1.)
+        grid_azim_anim_top += e_azim
+        to_station_file([2891.], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
+        to_station_file([2891.], 'fluid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
+        np.savetxt(out_dir / 'grid_dist_anim_top.txt', grid_dist_anim_top)
+        np.savetxt(out_dir / 'grid_azim_anim_top.txt', grid_azim_anim_top)
 
         # side view
         grid_depth_top = np.linspace(2891. - args['ulvz']['height'] - args['box']['height'],
@@ -319,13 +319,14 @@ if __name__ == "__main__":
         grid_depth_solid = np.concatenate((grid_depth_top[:-1], grid_depth_ulvz))
         grid_depth_solid[0] += tolerance_length
         top_margin = args['ulvz_animation']['side_view_top_margin'] * args['ulvz']['height']
-        n_top_margin = int(np.ceil(top_margin / (args['ulvz']['height'] + args['box']['height']) * (len(grid_depth_solid) - 1))) + 1
+        n_top_margin = int(
+            np.ceil(top_margin / (args['ulvz']['height'] + args['box']['height']) * (len(grid_depth_solid) - 1))) + 1
         grid_depth_top_margin = np.linspace(
             2891. - args['ulvz']['height'] - args['box']['height'] - top_margin,
             2891. - args['ulvz']['height'] - args['box']['height'],
             n_top_margin)
         grid_depth_top_margin[-1] -= tolerance_length
-        grid_depth_solid = np.concatenate((grid_depth_top_margin, grid_depth_solid))
+        grid_depth_anim_side_solid = np.concatenate((grid_depth_top_margin, grid_depth_solid))
         grid_depth_fluid = np.linspace(2891., 2891. + args['box']['height'], 4 * 1 + 1)
         grid_depth_fluid[-1] -= tolerance_length
         bot_margin = args['ulvz_animation']['side_view_bot_margin'] * args['ulvz']['height']
@@ -334,26 +335,37 @@ if __name__ == "__main__":
                                             2891. + args['box']['height'] + bot_margin,
                                             n_bot_margin)
         grid_depth_bot_margin[0] += tolerance_length
-        grid_depth_fluid = np.concatenate((grid_depth_fluid, grid_depth_bot_margin))
-        grid_azim = np.array([e_azim, e_azim + np.pi])
-        to_station_file(grid_depth_solid, 'solid', grid_dist, grid_azim, u_lat, u_lon, "ANIM_SIDE")
-        to_station_file(grid_depth_fluid, 'fluid', grid_dist, grid_azim, u_lat, u_lon, "ANIM_SIDE")
-        np.savetxt(out_dir / 'grid_depth_anim_side_solid.txt', grid_depth_solid)
-        np.savetxt(out_dir / 'grid_depth_anim_side_fluid.txt', grid_depth_fluid)
-        np.savetxt(out_dir / 'grid_azim_anim_side.txt', grid_azim)
+        grid_depth_anim_side_fluid = np.concatenate((grid_depth_fluid, grid_depth_bot_margin))
+        grid_dist_anim_side = grid_dist_anim_top
+        grid_azim_anim_side = np.array([e_azim, e_azim + np.pi])
+        to_station_file(grid_depth_anim_side_solid, 'solid', grid_dist_anim_side, grid_azim_anim_side, u_lat, u_lon,
+                        "ANIM_SIDE")
+        to_station_file(grid_depth_anim_side_fluid, 'fluid', grid_dist_anim_side, grid_azim_anim_side, u_lat, u_lon,
+                        "ANIM_SIDE")
+        np.savetxt(out_dir / 'grid_depth_anim_side_solid.txt', grid_depth_anim_side_solid)
+        np.savetxt(out_dir / 'grid_depth_anim_side_fluid.txt', grid_depth_anim_side_fluid)
+        np.savetxt(out_dir / 'grid_azim_dist_side.txt', grid_azim_anim_side)
+        np.savetxt(out_dir / 'grid_azim_anim_side.txt', grid_azim_anim_side)
 
         # also need more incident
-        dist_half_range = (args_mesh['NEX_U'] + 2) * dist_delta_elem * (1 + args['ulvz_animation']['top_view_right_margin'])
-        n_dist = int(np.ceil((args_mesh['NEX_U'] + 2) * 2 * 4 * (1 + args['ulvz_animation']['top_view_right_margin']))) + 1
-        grid_dist = np.linspace(u_dist - dist_half_range,
-                                u_dist + dist_half_range, n_dist)
+        dist_half_range = (args_mesh['NEX_U'] + 2) * dist_delta_elem * (
+                    1 + args['ulvz_animation']['top_view_right_margin'])
+        n_dist = int(
+            np.ceil((args_mesh['NEX_U'] + 2) * 2 * 4 * (1 + args['ulvz_animation']['top_view_right_margin']))) + 1
+        grid_dist_anim_incident = np.linspace(u_dist - dist_half_range,
+                                              u_dist + dist_half_range, n_dist)
         if args['event']['monopole']:
-            grid_azim = np.array([u_azim])
+            grid_azim_anim_incident = np.array([u_azim])
         else:
-            grid_azim = np.radians(np.array([0., 72., 144., 216., 288.]))
-        to_station_file(grid_depth_solid, 'solid', grid_dist, grid_azim, e_lat, e_lon, "ANIM_INCIDENT")
-        to_station_file(grid_depth_fluid, 'fluid', grid_dist, grid_azim, e_lat, e_lon, "ANIM_INCIDENT")
-        np.savetxt(out_dir / 'grid_dist_anim_incident.txt', grid_dist)
+            grid_azim_anim_incident = np.radians(np.array([0., 72., 144., 216., 288.]))
+        to_station_file(grid_depth_anim_side_solid, 'solid', grid_dist_anim_incident, grid_azim_anim_incident, e_lat,
+                        e_lon, "ANIM_INCIDENT")
+        to_station_file(grid_depth_anim_side_fluid, 'fluid', grid_dist_anim_incident, grid_azim_anim_incident, e_lat,
+                        e_lon, "ANIM_INCIDENT")
+        np.savetxt(out_dir / 'grid_dist_anim_incident.txt', grid_dist_anim_incident)
+        np.savetxt(out_dir / 'grid_azim_anim_incident.txt', grid_azim_anim_incident)
+        np.savetxt(out_dir / 'grid_depth_anim_incident_solid.txt', grid_depth_anim_side_solid)
+        np.savetxt(out_dir / 'grid_depth_anim_incident_fluid.txt', grid_depth_anim_side_fluid)
 
         # file
         fout = open(out_dir / 'STATIONS_ARRAY_ANIMATION', 'w')
