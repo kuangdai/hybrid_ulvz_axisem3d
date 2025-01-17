@@ -18,6 +18,8 @@
 #include <stdexcept>
 #include <limits>
 
+#include <iostream>
+
 namespace vector_tools {
     // sorted interpolation
     template <typename T>
@@ -41,10 +43,14 @@ namespace vector_tools {
         // check value
         T tolerance = ((*(itEnd - 1) - *(itBegin)) *
                        std::numeric_limits<T>::epsilon() * (T)2.);
-        if (value < *(itBegin) - tolerance ||
-            value > *(itEnd - 1) + tolerance) {
-            throw std::runtime_error("vector_tools::sortedInterpolation || "
-                                     "Value is out of range.");
+        if (value < *(itBegin) - tolerance) {
+            std::cout << "Warning: Value (" << value
+                      << ") is below the lower bound of " << *(itBegin)
+                      << ".\n";
+        } else if (value > *(itEnd - 1) + tolerance) {
+            std::cout << "Warning: Value (" << value
+                      << ") is above the upper bound of " << *(itEnd - 1)
+                      << ".\n";
         }
         
         // find
