@@ -2,10 +2,10 @@ BIN_DIR                       ../../@@_mesh_3d/output/bin
 HAS_INJECTION                 1
 NUM_TIME_STEPS                0
 EXCLUDE_UNGROUPED             1
-GROUPED_STATIONS              3
+GROUPED_STATIONS              5
 GROUP_NAMES                   ARRAY ANIM_TOP_SOLID ANIM_TOP_FLUID ANIM_SIDE_SOLID ANIM_SIDE_FLUID
 MEDIUM_IN_FLUID               0 0 1 0 1
 CHANNEL                       U U U U U
 SAMPLE_INTERVAL               __SAMPLE__ __SAMPLE_ANIMATION__ __SAMPLE_ANIMATION__ __SAMPLE_ANIMATION__ __SAMPLE_ANIMATION__
-DUMP_INTERVAL                 2000
-WCS                           SPZ
+DUMP_INTERVAL                 2000 2000 2000 2000 2000
+WCS                           SPZ SPZ SPZ SPZ SPZ

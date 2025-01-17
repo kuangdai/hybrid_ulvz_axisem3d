@@ -2,7 +2,7 @@ BIN_DIR                       ../../@@_mesh_prem/output/bin
 HAS_INJECTION                 0
 NUM_TIME_STEPS                0
 EXCLUDE_UNGROUPED             1
-GROUPED_STATIONS              3
+GROUPED_STATIONS              5
 GROUP_NAMES                   ARRAY INCIDENT_SOLID INCIDENT_FLUID ANIM_INCIDENT_SOLID ANIM_INCIDENT_FLUID
 MEDIUM_IN_FLUID               0     0        1    0   1
 CHANNEL                       U     U        X    U   U
