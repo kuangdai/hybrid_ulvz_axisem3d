@@ -8,4 +8,4 @@ MEDIUM_IN_FLUID               0     0        1    0   1
 CHANNEL                       U     U        X    U   U
 SAMPLE_INTERVAL               __SAMPLE__    __SAMPLE__       __SAMPLE__     __SAMPLE_ANIMATION__  __SAMPLE_ANIMATION__
 DUMP_INTERVAL                 2000  2000     2000 2000     2000
-WCS                           RTZ   SPZ      SPZ  RTZ      RTZ
+WCS                           RTZ   SPZ      SPZ  SPZ      SPZ
