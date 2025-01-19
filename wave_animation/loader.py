@@ -6,7 +6,7 @@ import xarray as xr
 from geodetic import GeoPoints
 
 
-class AxiSEM3DSynthetics:
+class AxiSEM3DSyntheticsLoader:
     def __init__(self, nc_path, station_file, src_lat, src_lon, src_spz, in_memory=True):
         self.nc_path = Path(nc_path)
         self.station_file = station_file
