@@ -47,7 +47,7 @@ def dist_azim_interp(data, dist_grid, target_dist_azim, batch_size=1024):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract Incident Wave.")
+    parser = argparse.ArgumentParser(description="Process Incident Wave.")
     parser.add_argument("--input-path", type=str, required=True,
                         help="Path of AxiSEM3D output.")
     parser.add_argument("--t0", type=float, required=True,
