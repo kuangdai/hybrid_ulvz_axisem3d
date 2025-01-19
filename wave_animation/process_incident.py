@@ -3,12 +3,11 @@ import json
 from pathlib import Path
 
 import numpy as np
-import torch
 import tqdm
 from scipy.interpolate import interp1d
 
 from geodetic import GeoPoints
-from loader import AxiSEM3DSyntheticsLoader
+from synthetics import AxiSEM3DSyntheticsLoader, rotate
 
 
 def dist_azim_interp(data, dist_grid, target_dist_azim, batch_size=1024):
@@ -128,13 +127,8 @@ if __name__ == "__main__":
     to_frame = to_frame.reshape(len(grid_dist_anim),
                                 len(grid_depth_anim),
                                 len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
-    rot = np.einsum('nij,njk->nik', fr_frame, to_frame.swapaxes(1, 2))
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1], -1)
-    for start in tqdm.trange(0, anim_data.shape[-1], args.batch_size, leave=False):
-        u = torch.from_numpy(anim_data[:, :, start:start + args.batch_size]).to(args.device)
-        m = torch.from_numpy(rot[start:start + args.batch_size]).to(args.device, torch.float32)
-        u1 = torch.einsum('nij,tjn->tin', m, u)
-        anim_data[:, :, start:start + args.batch_size] = u.cpu().numpy()
+    anim_data = rotate(anim_data, fr_frame, to_frame, args.batch_size, args.device)
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1],
                                   len(grid_depth_anim),
                                   len(grid_dist_anim),
