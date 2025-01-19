@@ -77,7 +77,7 @@ if __name__ == "__main__":
     grid_azim_incident = np.loadtxt(in_path / "02_stations/grid_azim_anim_incident.txt")
     if not hasattr(grid_azim_incident, "__len__"):
         grid_azim_incident = np.array([grid_azim_incident])
-    grid_depth = np.loadtxt(in_path / f"02_stations/grid_depth_anim_incident_{args.medium}.txt")
+    grid_depth_anim = np.loadtxt(in_path / f"02_stations/grid_depth_anim_incident_{args.medium}.txt")
     grid_dist_anim = np.loadtxt(in_path / f"02_stations/grid_dist_anim_{args.view}.txt")
     grid_azim_anim = np.loadtxt(in_path / f"02_stations/grid_azim_anim_{args.view}.txt")
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     anim_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1],
                                   len(grid_dist_incident),
-                                  len(grid_depth),
+                                  len(grid_depth_anim),
                                   len(grid_azim_incident)).swapaxes(2, 3)
 
     # Handle depth of top view
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             anim_data = anim_data[:, :, -1:, :, :]
         else:
             anim_data = anim_data[:, :, :1, :, :]
-        grid_depth = np.array([2891.])
+        grid_depth_anim = np.array([2891.])
 
     # Read stations
     print("Reading stations...")
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     points = GeoPoints(np.array([lat, lon, dep / 1e3]).T)
     dist_azim = points.get_rtp_src_centered(meta["event_lat"], meta["event_lon"])[:, 1:]
     dist_azim = dist_azim.reshape(len(grid_dist_anim),
-                                  len(grid_depth),
+                                  len(grid_depth_anim),
                                   len(grid_azim_anim), 2).swapaxes(0, 1)
 
     # Interpolation
@@ -122,11 +122,11 @@ if __name__ == "__main__":
     print("Rotating...")
     fr_frame = points.form_spz_frame(meta["event_lat"], meta["event_lon"])
     fr_frame = fr_frame.reshape(len(grid_dist_anim),
-                                len(grid_depth),
+                                len(grid_depth_anim),
                                 len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
     to_frame = points.form_RTZ_frame(meta["event_lat"], meta["event_lon"])
     to_frame = to_frame.reshape(len(grid_dist_anim),
-                                len(grid_depth),
+                                len(grid_depth_anim),
                                 len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
     rot = np.einsum('nij,njk->nik', fr_frame, to_frame.swapaxes(1, 2))
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1], -1)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         u1 = torch.einsum('nij,tjn->tin', m, u)
         anim_data[:, :, start:start + args.batch_size] = u.cpu().numpy()
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1],
-                                  len(grid_depth),
+                                  len(grid_depth_anim),
                                   len(grid_dist_anim),
                                   len(grid_azim_anim))
 
