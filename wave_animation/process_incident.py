@@ -70,10 +70,10 @@ if __name__ == "__main__":
         meta = json.load(fs)
 
     # Read grids
-    grid_dist = np.loadtxt(in_path / "02_stations/grid_dist_anim_incident.txt")
-    grid_azim = np.loadtxt(in_path / "02_stations/grid_azim_anim_incident.txt")
-    if not hasattr(grid_azim, "__len__"):
-        grid_azim = np.array([grid_azim])
+    grid_dist_incident = np.loadtxt(in_path / "02_stations/grid_dist_anim_incident.txt")
+    grid_azim_incident = np.loadtxt(in_path / "02_stations/grid_azim_anim_incident.txt")
+    if not hasattr(grid_azim_incident, "__len__"):
+        grid_azim_incident = np.array([grid_azim_incident])
     grid_depth = np.loadtxt(in_path / f"02_stations/grid_depth_anim_incident_{args.medium}.txt")
     grid_dist_anim = np.loadtxt(in_path / f"02_stations/grid_dist_anim_{args.view}.txt")
     grid_azim_anim = np.loadtxt(in_path / f"02_stations/grid_azim_anim_{args.view}.txt")
@@ -88,9 +88,9 @@ if __name__ == "__main__":
     t1_id = np.searchsorted(ds.times, args.t1)
     raw_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
     raw_data = raw_data.reshape(raw_data.shape[0], raw_data.shape[1],
-                                len(grid_dist),
+                                len(grid_dist_incident),
                                 len(grid_depth),
-                                len(grid_azim)).swapaxes(2, 3)
+                                len(grid_azim_incident)).swapaxes(2, 3)
 
     # Handle depth of top view
     if args.view == "top":
@@ -114,12 +114,7 @@ if __name__ == "__main__":
 
     # Interpolation
     print("Spatial interpolation...")
-    anim_data = dist_azim_interp(raw_data, grid_dist, dist_azim, args.batch_size)
-    anim_data = anim_data.reshape(anim_data.shape[0],
-                                  anim_data.shape[1],
-                                  len(grid_depth),
-                                  len(grid_dist_anim),
-                                  len(grid_azim_anim))
+    anim_data = dist_azim_interp(raw_data, grid_dist_incident, dist_azim, args.batch_size)
 
     # Save
     print("Saving...")
