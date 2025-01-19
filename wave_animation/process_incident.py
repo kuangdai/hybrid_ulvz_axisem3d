@@ -6,7 +6,6 @@ import numpy as np
 import torch
 import tqdm
 from scipy.interpolate import interp1d
-from tqdm import trange
 
 from geodetic import GeoPoints
 from loader import AxiSEM3DSyntheticsLoader
@@ -21,7 +20,7 @@ def dist_azim_interp(data, dist_grid, target_dist_azim, batch_size=1024):
     nfft = data.shape[-1]
     k = (np.fft.fftfreq(nfft, d=(2 * np.pi / nfft)) * nfft)[:(nfft // 2 + 1)]
     # depth loop
-    for i_depth in trange(n_depth, leave=False):
+    for i_depth in tqdm.trange(n_depth, leave=False):
         # distance interpolator
         interp_dist = interp1d(dist_grid, data[:, :, i_depth, :, :], axis=2, kind="linear")
 
