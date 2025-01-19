@@ -82,7 +82,7 @@ if __name__ == "__main__":
     print("Reading raw data...")
     ds = AxiSEM3DSynthetics(in_path / f"04_solve_prem/output/stations/ANIM_INCIDENT_{args.medium.upper()}",
                             in_path / f"02_stations/STATIONS_ANIM_INCIDENT_{args.medium.upper()}",
-                            meta["event_lat"], meta["event_lon"], src_spz=False)
+                            meta["event_lat"], meta["event_lon"], src_spz=True)
     t0_id = np.searchsorted(ds.times, args.t0)
     t1_id = np.searchsorted(ds.times, args.t1)
     raw_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
