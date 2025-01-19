@@ -1,6 +1,8 @@
 from pathlib import Path
 
 import numpy as np
+import torch
+import tqdm
 import xarray as xr
 
 from geodetic import GeoPoints
@@ -82,3 +84,14 @@ class AxiSEM3DSyntheticsLoader:
         for rank, (local_ids, global_ids) in rank_to_local_global.items():
             u[:, :, global_ids] = self.data_on_rank[rank][start_time:end_time:time_interval, :, local_ids]
         return u
+
+
+def rotate(data, fr_frame, to_frame, batch_size, device):
+    data_new = data.copy()
+    rot = np.einsum('nij,njk->nik', fr_frame, to_frame.swapaxes(1, 2))
+    for start in tqdm.trange(0, data.shape[-1], batch_size, leave=False):
+        u = torch.from_numpy(data[:, :, start:start + batch_size]).to(device)
+        m = torch.from_numpy(rot[start:start + batch_size]).to(device, torch.float32)
+        u1 = torch.einsum('tin,nij->tjn', u, m)
+        data_new[:, :, start:start + batch_size] = u1.cpu().numpy()
+    return data_new
