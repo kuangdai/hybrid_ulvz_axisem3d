@@ -3,11 +3,13 @@ import json
 from pathlib import Path
 
 import numpy as np
+import torch
+import tqdm
 from scipy.interpolate import interp1d
 from tqdm import trange
 
 from geodetic import GeoPoints
-from synthetics import AxiSEM3DSynthetics
+from loader import AxiSEM3DSyntheticsLoader
 
 
 def dist_azim_interp(data, dist_grid, target_dist_azim, batch_size=1024):
@@ -60,6 +62,8 @@ if __name__ == "__main__":
                         help="View.")
     parser.add_argument("--batch-size", type=int, default=8192,
                         help="Batch size.")
+    parser.add_argument("--device", type=str, default="cpu",
+                        help="Device.")
     parser.add_argument("--output-path", type=str, default="./outputs",
                         help="Output path.")
     args = parser.parse_args()
@@ -80,23 +84,23 @@ if __name__ == "__main__":
 
     # Read data
     print("Reading raw data...")
-    ds = AxiSEM3DSynthetics(in_path / f"04_solve_prem/output/stations/ANIM_INCIDENT_{args.medium.upper()}",
-                            in_path / f"02_stations/STATIONS_ANIM_INCIDENT_{args.medium.upper()}",
-                            meta["event_lat"], meta["event_lon"], src_spz=True)
+    ds = AxiSEM3DSyntheticsLoader(in_path / f"04_solve_prem/output/stations/ANIM_INCIDENT_{args.medium.upper()}",
+                                  in_path / f"02_stations/STATIONS_ANIM_INCIDENT_{args.medium.upper()}",
+                                  meta["event_lat"], meta["event_lon"], src_spz=True)
     t0_id = np.searchsorted(ds.times, args.t0)
     t1_id = np.searchsorted(ds.times, args.t1)
-    raw_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
-    raw_data = raw_data.reshape(raw_data.shape[0], raw_data.shape[1],
-                                len(grid_dist_incident),
-                                len(grid_depth),
-                                len(grid_azim_incident)).swapaxes(2, 3)
+    anim_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
+    anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1],
+                                  len(grid_dist_incident),
+                                  len(grid_depth),
+                                  len(grid_azim_incident)).swapaxes(2, 3)
 
     # Handle depth of top view
     if args.view == "top":
         if args.medium == "solid":
-            raw_data = raw_data[:, :, -1:, :, :]
+            anim_data = anim_data[:, :, -1:, :, :]
         else:
-            raw_data = raw_data[:, :, :1, :, :]
+            anim_data = anim_data[:, :, :1, :, :]
         grid_depth = np.array([2891.])
 
     # Read stations
@@ -113,7 +117,29 @@ if __name__ == "__main__":
 
     # Interpolation
     print("Spatial interpolation...")
-    anim_data = dist_azim_interp(raw_data, grid_dist_incident, dist_azim, args.batch_size)
+    anim_data = dist_azim_interp(anim_data, grid_dist_incident, dist_azim, args.batch_size)
+
+    # Rotate
+    print("Rotating...")
+    fr_frame = points.form_spz_frame(meta["event_lat"], meta["event_lon"])
+    fr_frame = fr_frame.reshape(len(grid_dist_anim),
+                                len(grid_depth),
+                                len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
+    to_frame = points.form_RTZ_frame(meta["event_lat"], meta["event_lon"])
+    to_frame = to_frame.reshape(len(grid_dist_anim),
+                                len(grid_depth),
+                                len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
+    rot = np.einsum('nij,njk->nik', fr_frame, to_frame.swapaxes(1, 2))
+    anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1], -1)
+    for start in tqdm.trange(0, anim_data.shape[-1], args.batch_size, leave=False):
+        u = torch.from_numpy(anim_data[:, :, start:start + args.batch_size]).to(args.device)
+        m = torch.from_numpy(rot[start:start + args.batch_size]).to(args.device, torch.float32)
+        u1 = torch.einsum('nij,tjn->tin', m, u)
+        anim_data[:, :, start:start + args.batch_size] = u.cpu().numpy()
+    anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1],
+                                  len(grid_depth),
+                                  len(grid_dist_anim),
+                                  len(grid_azim_anim))
 
     # Save
     print("Saving...")
