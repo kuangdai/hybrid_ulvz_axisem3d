@@ -7,7 +7,7 @@ import torch
 import tqdm
 
 from geodetic import GeoPoints
-from synthetics import AxiSEM3DSynthetics
+from loader import AxiSEM3DSyntheticsLoader
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process Outgoing Wave.")
@@ -46,9 +46,10 @@ if __name__ == "__main__":
 
     # Read data
     print("Reading raw data...")
-    ds = AxiSEM3DSynthetics(in_path / f"12_solve_3d/output/stations/ANIM_{args.view.upper()}_{args.medium.upper()}",
-                            in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}",
-                            meta["ulvz_lat"], meta["ulvz_lon"], src_spz=True)
+    ds = AxiSEM3DSyntheticsLoader(
+        in_path / f"12_solve_3d/output/stations/ANIM_{args.view.upper()}_{args.medium.upper()}",
+        in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}",
+        meta["ulvz_lat"], meta["ulvz_lon"], src_spz=True)
     t0_id = np.searchsorted(ds.times, args.t0)
     t1_id = np.searchsorted(ds.times, args.t1)
     anim_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
@@ -59,11 +60,11 @@ if __name__ == "__main__":
 
     # Read stations
     print("Reading stations...")
-    ex_st = np.loadtxt(in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}", dtype=str)
-    ex_lat = ex_st[:, 2].astype(float)
-    ex_lon = ex_st[:, 3].astype(float)
-    ex_dep = ex_st[:, 5].astype(float)
-    points = GeoPoints(np.array([ex_lat, ex_lon, ex_dep / 1e3]).T)
+    st = np.loadtxt(in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}", dtype=str)
+    lat = st[:, 2].astype(float)
+    lon = st[:, 3].astype(float)
+    dep = st[:, 5].astype(float)
+    points = GeoPoints(np.array([lat, lon, dep / 1e3]).T)
 
     # Rotate
     print("Rotating...")
@@ -71,9 +72,7 @@ if __name__ == "__main__":
     to_frame = to_frame.reshape(len(grid_dist_anim),
                                 len(grid_depth_anim),
                                 len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
-    # Rotation matrices for all batches
-    rot = np.einsum('nij,njk->nik', to_frame.swapaxes(-1, -2), ds.frame)
-    # Rotate vectors for all times and batches
+    rot = np.einsum('nij,njk->nik', ds.frame, to_frame.swapaxes(1, 2))
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1], -1)
     for start in tqdm.trange(0, anim_data.shape[-1], args.batch_size, leave=False):
         u = torch.from_numpy(anim_data[:, :, start:start + args.batch_size]).to(args.device)
