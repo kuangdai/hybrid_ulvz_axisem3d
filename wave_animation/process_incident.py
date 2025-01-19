@@ -77,7 +77,6 @@ if __name__ == "__main__":
     grid_depth = np.loadtxt(in_path / f"02_stations/grid_depth_anim_incident_{args.medium}.txt")
     grid_dist_anim = np.loadtxt(in_path / f"02_stations/grid_dist_anim_{args.view}.txt")
     grid_azim_anim = np.loadtxt(in_path / f"02_stations/grid_azim_anim_{args.view}.txt")
-    grid_depth_top = np.array([2891.])
 
     # Read data
     print("Reading raw data...")
