@@ -104,11 +104,11 @@ if __name__ == "__main__":
 
     # Read stations
     print("Reading stations...")
-    ex_st = np.loadtxt(in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}", dtype=str)
-    ex_lat = ex_st[:, 2].astype(float)
-    ex_lon = ex_st[:, 3].astype(float)
-    ex_dep = ex_st[:, 5].astype(float)
-    points = GeoPoints(np.array([ex_lat, ex_lon, ex_dep / 1e3]).T)
+    st = np.loadtxt(in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}", dtype=str)
+    lat = st[:, 2].astype(float)
+    lon = st[:, 3].astype(float)
+    dep = st[:, 5].astype(float)
+    points = GeoPoints(np.array([lat, lon, dep / 1e3]).T)
     dist_azim = points.get_rtp_src_centered(meta["event_lat"], meta["event_lon"])[:, 1:]
     dist_azim = dist_azim.reshape(len(grid_dist_anim),
                                   len(grid_depth),
