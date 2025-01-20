@@ -76,9 +76,22 @@ if __name__ == "__main__":
                                   len(grid_depth_anim),
                                   len(grid_dist_anim),
                                   len(grid_azim_anim))
+
+    # Add incident
+    out_path = Path(args.output_path)
+    incident_data = np.load(out_path / f"incident_{args.view}_{args.medium}.npz")["arr_0"]
+    anim_data += incident_data
+    with open(in_path / "02_stations/args_anim.json", "r") as fs:
+        anim_meta = json.load(fs)
+    t1 = anim_meta["box_dist_end"]
+    d0 = anim_meta[f"box_depth_start_{args.medium}"]
+    d1 = anim_meta[f"box_depth_end_{args.medium}"]
+    if args.view == "top":
+        anim_data[:, :, :, :t1, :] -= incident_data[:, :, :, :t1, :]
+    else:
+        anim_data[:, :, d0:d1, :t1, :] -= incident_data[:, :, d0:d1, :t1, :]
+
     # Save
     print("Saving...")
-    out_path = Path(args.output_path)
-    out_path.mkdir(parents=True, exist_ok=True)
     np.savez(out_path / f"outgoing_{args.view}_{args.medium}.npz", anim_data)
     np.savetxt(out_path / f"outgoing_{args.view}_{args.medium}_times.txt", ds.times[t0_id:t1_id:args.time_interval])
