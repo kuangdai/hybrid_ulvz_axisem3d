@@ -400,5 +400,6 @@ if __name__ == "__main__":
                      'box_depth_start_solid': n_top_margin,
                      'box_depth_end_solid': len(grid_depth_anim_side_solid),
                      "box_depth_start_fluid": 0,
-                     "box_depth_end_fluid": P * 1 + 1}
+                     "box_depth_end_fluid": P * 1 + 1,
+                     "ulvz_actual_radius": args_mesh['NEX_U'] * dist_delta_elem}
         json.dump(args_anim, open(out_dir / "args_anim.json", 'w'))
