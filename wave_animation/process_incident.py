@@ -17,7 +17,7 @@ def dist_azim_interp(data, dist_grid, target_dist_azim, batch_size=1024):
                        target_dist_azim.shape[0],
                        target_dist_azim.shape[1]), dtype=np.float32)
     nfft = data.shape[-1]
-    k = (np.fft.fftfreq(nfft, d=(2 * np.pi / nfft)) * nfft)[:(nfft // 2 + 1)]
+    freq = np.fft.fftfreq(nfft, d=1.0) * nfft
     # depth loop
     for i_depth in tqdm.trange(n_depth, leave=False):
         # distance interpolator
@@ -33,8 +33,8 @@ def dist_azim_interp(data, dist_grid, target_dist_azim, batch_size=1024):
 
             # azimuth interpolation
             if dist_data.shape[-1] > 1:
-                fft_data = np.fft.rfft(dist_data, axis=3, n=nfft)
-                exp_terms = np.exp(1j * np.outer(k, azim))
+                fft_data = np.fft.fft(dist_data, axis=3, n=nfft) / nfft
+                exp_terms = np.exp(1j * np.outer(freq, azim))
                 azim_data = np.einsum("TCda,ad->TCd", fft_data, exp_terms).real
             else:
                 azim_data = dist_data[..., 0]  # monopole
