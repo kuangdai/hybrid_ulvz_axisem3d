@@ -394,3 +394,11 @@ if __name__ == "__main__":
         fin = open(out_dir / 'STATIONS_ANIM_INCIDENT_FLUID')
         fout.write(fin.read())
         fout.close()
+
+        # write derived info for later use
+        args_anim = {'box_dist_end': n_inner,
+                     'box_depth_start_solid': n_top_margin,
+                     'box_depth_end_solid': len(grid_depth_anim_side_solid),
+                     "box_depth_start_fluid": 0,
+                     "box_depth_end_fluid": P * 1 + 1}
+        json.dump(args_anim, open(out_dir / "args_anim.json", 'w'))
