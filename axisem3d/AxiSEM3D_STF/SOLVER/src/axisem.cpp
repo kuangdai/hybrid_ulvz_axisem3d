@@ -655,7 +655,7 @@ int axisem_main(int argc, char *argv[]) {
             Eigen::TensorMap<Eigen::Tensor<Complex,2,Eigen::RowMajor>>
             (out.data(), dims) = u_spz_BOX_Fourier.reshape(dims);
             RMatXX outr = out.real();
-            CMatXX outi = out.imag();
+            RMatXX outi = out.imag();
             
             
             if (outr.hasNaN() || outi.hasNaN()) {
