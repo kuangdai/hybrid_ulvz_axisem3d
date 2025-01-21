@@ -46,7 +46,7 @@ def xyz_2_rtp(xyz, theta_where_undefined, phi_where_undefined):
     phi[xyz[:, 1] < 0.] += np.pi
     phi[phi >= 2. * np.pi] -= 2. * np.pi
     s = np.sqrt(xyz[:, 0] ** 2 + xyz[:, 1] ** 2)
-    phi[s < 1e-10] = phi_where_undefined[s < 1e-10]
+    phi[s < 1e-8] = phi_where_undefined[s < 1e-8]
     return np.array([r, theta, phi]).T
 
 
@@ -54,12 +54,15 @@ class GeoPoints:
     """ GeoPoints class """
     r0 = 6371.
 
-    def __init__(self, lld=np.zeros((1, 3))):
+    def __init__(self, lld=np.zeros((1, 3)), phi_at_creation=None):
         self.lld = lld.copy()
+        self.phi_at_creation = None
+        if phi_at_creation is not None:
+            self.phi_at_creation = phi_at_creation.copy()
         self.standardize_lon()
 
     def copy(self):
-        return GeoPoints(self.lld)
+        return GeoPoints(self.lld, self.phi_at_creation)
 
     @staticmethod
     def create_rtp_src_centered(rtp_src, src_lat, src_lon):
@@ -99,7 +102,9 @@ class GeoPoints:
     def get_rtp_src_centered(self, src_lat, src_lon):
         xyz_src = self.get_xyz_src_centered(src_lat, src_lon)
         theta_where_undefined = np.zeros(len(self.lld))
-        phi_where_undefined = self.get_rtp_geographic()[:, 2]
+        phi_where_undefined = self.phi_at_creation
+        if phi_where_undefined is None:
+            phi_where_undefined = np.zeros(len(self.lld))
         rtp_src = xyz_2_rtp(xyz_src, theta_where_undefined, phi_where_undefined)
         return rtp_src
 
@@ -108,8 +113,8 @@ class GeoPoints:
         xyz_src = rtp_2_xyz(rtp_src)
         xyz_geo = xyz_src.dot(r_mat.T)
         theta_where_undefined = np.zeros(len(rtp_src))
-        phi_where_undefined = rtp_src[:, 2]
-        rtp_geo = xyz_2_rtp(xyz_geo, theta_where_undefined, phi_where_undefined)
+        self.phi_at_creation = rtp_src[:, 2].copy()
+        rtp_geo = xyz_2_rtp(xyz_geo, theta_where_undefined, self.phi_at_creation)
         self.set_rtp_geographic(rtp_geo)
 
     def form_spz_frame(self, src_lat, src_lon, returns_phi_axis=False):
