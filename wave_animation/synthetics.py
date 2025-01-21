@@ -5,11 +5,9 @@ import torch
 import tqdm
 import xarray as xr
 
-from geodetic import GeoPoints
-
 
 class AxiSEM3DSyntheticsLoader:
-    def __init__(self, nc_path, station_file, src_lat, src_lon, src_spz, in_memory=True):
+    def __init__(self, nc_path, station_file, in_memory=True):
         self.nc_path = Path(nc_path)
         self.station_file = station_file
 
@@ -17,10 +15,6 @@ class AxiSEM3DSyntheticsLoader:
         station_file_data = np.loadtxt(station_file, dtype=str)
         self.st_keys = np.char.add(np.char.add(station_file_data[:, 1], "."),
                                    station_file_data[:, 0])
-        lat = station_file_data[:, 2].astype(float)
-        lon = station_file_data[:, 3].astype(float)
-        dep = station_file_data[:, 5].astype(float)
-        self.st_points = GeoPoints(np.array([lat, lon, dep / 1e3]).T)
 
         # Build dictionaries to map between keys to ranks
         rank_station_data = np.loadtxt(self.nc_path / "rank_station.info", dtype=str, skiprows=1)
@@ -50,12 +44,6 @@ class AxiSEM3DSyntheticsLoader:
                     self.data_on_rank[rank] = np.array(ds["data"].values)
             else:
                 self.data_on_rank[rank] = xr.open_dataset(nc_file)["data"]
-
-        # Set up source frame
-        if src_spz:
-            self.frame = self.st_points.form_spz_frame(src_lat, src_lon)
-        else:
-            self.frame = self.st_points.form_RTZ_frame(src_lat, src_lon)
 
     def get(self, st_keys=None, start_time=None, end_time=None, time_interval=1):
         if st_keys is None:

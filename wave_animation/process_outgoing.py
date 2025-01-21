@@ -46,8 +46,7 @@ if __name__ == "__main__":
     print("Reading raw data...")
     ds = AxiSEM3DSyntheticsLoader(
         in_path / f"12_solve_3d/output/stations/ANIM_{args.view.upper()}_{args.medium.upper()}",
-        in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}",
-        meta["ulvz_lat"], meta["ulvz_lon"], src_spz=True)
+        in_path / f"02_stations/STATIONS_ANIM_{args.view.upper()}_{args.medium.upper()}")
     t0_id = np.searchsorted(ds.times, args.t0)
     t1_id = np.searchsorted(ds.times, args.t1)
     anim_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
@@ -62,16 +61,22 @@ if __name__ == "__main__":
     lat = st[:, 2].astype(float)
     lon = st[:, 3].astype(float)
     dep = st[:, 5].astype(float)
-    points = GeoPoints(np.array([lat, lon, dep / 1e3]).T)
+    phi_under_ulvz = np.zeros((len(grid_dist_anim), len(grid_depth_anim), len(grid_azim_anim)))
+    phi_under_ulvz[:, :, :] = grid_azim_anim[None, None, :]
+    points = GeoPoints(np.array([lat, lon, dep / 1e3]).T, phi_under_ulvz.reshape(-1))
 
     # Rotate
     print("Rotating...")
+    fr_frame = points.form_spz_frame(meta["ulvz_lat"], meta["ulvz_lon"])
+    fr_frame = fr_frame.reshape(len(grid_dist_anim),
+                                len(grid_depth_anim),
+                                len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
     to_frame = points.form_RTZ_frame(meta["event_lat"], meta["event_lon"])
     to_frame = to_frame.reshape(len(grid_dist_anim),
                                 len(grid_depth_anim),
                                 len(grid_azim_anim), 3, 3).swapaxes(0, 1).reshape(-1, 3, 3)
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1], -1)
-    anim_data = rotate(anim_data, ds.frame, to_frame, args.batch_size, args.device)
+    anim_data = rotate(anim_data, fr_frame, to_frame, args.batch_size, args.device)
     anim_data = anim_data.reshape(anim_data.shape[0], anim_data.shape[1],
                                   len(grid_depth_anim),
                                   len(grid_dist_anim),
