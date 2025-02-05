@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # Read grids
     grid_dist_incident = np.loadtxt(in_path / "02_stations/grid_dist_anim_incident.txt")
     grid_azim_incident = np.loadtxt(in_path / "02_stations/grid_azim_anim_incident.txt")
-    if not hasattr(grid_azim_incident, "__len__"):
+    if np.ndim(grid_azim_incident) == 0:
         grid_azim_incident = np.array([grid_azim_incident])
     grid_depth_anim = np.loadtxt(in_path / f"02_stations/grid_depth_anim_incident_{args.medium}.txt")
     grid_dist_anim = np.loadtxt(in_path / f"02_stations/grid_dist_anim_{args.view}.txt")
