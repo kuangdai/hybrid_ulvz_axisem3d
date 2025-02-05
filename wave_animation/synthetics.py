@@ -7,7 +7,7 @@ import xarray as xr
 
 
 class AxiSEM3DSyntheticsLoader:
-    def __init__(self, nc_path, station_file, in_memory=True):
+    def __init__(self, nc_path, station_file, in_memory=False):
         self.nc_path = Path(nc_path)
         self.station_file = station_file
 
