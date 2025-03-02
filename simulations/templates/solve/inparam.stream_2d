@@ -1,6 +1,6 @@
 BIN_DIR                       ../../__MESH_DIR__/output/bin
 HAS_INJECTION                 0
-NUM_TIME_STEPS                0
+STARTING_TIME                 -9999999
 EXCLUDE_UNGROUPED             1
 GROUPED_STATIONS              1
 GROUP_NAMES                   ARRAY

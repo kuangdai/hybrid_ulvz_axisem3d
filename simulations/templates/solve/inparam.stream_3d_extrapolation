@@ -1,6 +1,6 @@
 BIN_DIR                       ../../@@_mesh_3d/output/bin
 HAS_INJECTION                 1
-NUM_TIME_STEPS                0
+STARTING_TIME                 -9999999
 EXCLUDE_UNGROUPED             1
 GROUPED_STATIONS              3
 GROUP_NAMES                   ARRAY EXTRAPOLATION_SOLID EXTRAPOLATION_FLUID

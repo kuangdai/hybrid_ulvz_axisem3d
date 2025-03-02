@@ -60,3 +60,27 @@ if __name__ == "__main__":
                      '__J__': 'solve_3d',
                      '__HPC__': args['slurm']['hpc']},
                     dest=out_dir / 'submit_solve_3d.sh')
+
+    # truncate incident
+    truncate_incident = args.get('time_series', {}).get('truncate_incident', False)
+    if truncate_incident:
+        # copy python
+        stf_dir = Path(f'outputs/{run_name}/@@_stf_3d')
+        replace_in_file('templates/truncate_taper_incident.py', {},
+                        dest=stf_dir / 'truncate_taper_incident.py')
+        # add to stf script
+        t0 = args['time_series']['truncate_incident_t0']
+        t1 = args['time_series']['truncate_incident_t1']
+        with open(stf_dir / "submit_stf_3d.sh", 'r') as fs:
+            content = fs.read()
+        with open(stf_dir / "submit_stf_3d.sh", 'w') as fs:
+            cmd = (f"\n# Truncate and taper incident"
+                   f"\npython truncate_taper_incident.py --t0 {t0} --t1 {t1}")
+            fs.write(content + cmd)
+        # change inparams
+        replace_in_file(out_dir / 'input/inparam.stream_wj',
+                        {
+                            "injection_SOLID.nc": "injection_SOLID_truncated.nc",
+                            "injection_FLUID.nc": "injection_FLUID_truncated.nc"})
+        replace_in_file(out_dir / 'input/inparam.stream',
+                        {"-9999999": str(t0)})

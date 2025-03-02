@@ -30,6 +30,8 @@
 #include "se_constants.hpp"
 #include <iostream>
 
+#include <cmath>
+
 void main_stream_1_0(int argc, char *argv[]) {
     // input files
     std::ifstream pfs(io::gInputDirectory + "/inparam.stream");
@@ -194,11 +196,15 @@ void main_stream_1_0(int argc, char *argv[]) {
     double t0 = ifs.get<double>();
     double dt = ifs.get<double>();
     int numTimeSteps = ifs.get<int>();
-    int numTimeStepsPar;
-    // time step from parfile
-    pfs >> prompt >> numTimeStepsPar;
-    if (numTimeStepsPar > 0) {
-        numTimeSteps = numTimeStepsPar;
+    double user_starting_time;
+    pfs >> prompt >> user_starting_time;
+    if (user_starting_time > t0) {
+        // Compute n_start
+        int n_start = std::ceil((user_starting_time - t0) / dt);
+
+        // update
+        t0 = t0 + n_start * dt;
+        numTimeSteps = numTimeSteps - n_start;
     }
     timeScheme->setTime(t0, dt, numTimeSteps);
     

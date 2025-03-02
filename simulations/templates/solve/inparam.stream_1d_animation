@@ -1,6 +1,6 @@
 BIN_DIR                       ../../@@_mesh_prem/output/bin
 HAS_INJECTION                 0
-NUM_TIME_STEPS                0
+STARTING_TIME                 -9999999
 EXCLUDE_UNGROUPED             1
 GROUPED_STATIONS              5
 GROUP_NAMES                   ARRAY INCIDENT_SOLID INCIDENT_FLUID ANIM_INCIDENT_SOLID ANIM_INCIDENT_FLUID
