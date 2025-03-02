@@ -50,7 +50,7 @@
     "sample_interval": 5,
     "half_duration_stf": 10.0,
     "truncate_incident": true,
-    "truncate_incident_t0": 500.0,
+    "truncate_incident_t0": 550.0,
     "truncate_incident_t1": 600.0
   },
   "slurm": {
