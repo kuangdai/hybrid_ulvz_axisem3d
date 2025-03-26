@@ -265,8 +265,20 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
     values[0] += mGridData[ldep1](llat1, llon1) * wdep1 * wlat1 * wlon1;
 //
 //if (mMaterialProp==MaterialProperty::VS){
-//    std::cout<<dep<<" "<<lat<<" "<<lon<<" "<<rElemCenter/1000<<" "<< thetaElemCenter/degree
+//    std::cout<<dep/1000<<" "<<lat<<" "<<lon<<" "
+//    <<rElemCenter/1000<<" "<< theta /degree <<" "<< thetaElemCenter/degree
 //    << " "<<MaterialPropertyString[mMaterialProp] <<" "<<values[0]<<"\n";
+//    if (values[0] < -1){
+//    std::cout << ldep0 << " " << llat0 << " " << llon0 << " " << wdep0 << " " << wlat0 << " " << wlon0 << " " << mGridData[ldep0](llat0, llon0) << std::endl;
+//std::cout << ldep0 << " " << llat1 << " " << llon0 << " " << wdep0 << " " << wlat1 << " " << wlon0 << " " << mGridData[ldep0](llat1, llon0) << std::endl;
+//std::cout << ldep0 << " " << llat0 << " " << llon1 << " " << wdep0 << " " << wlat0 << " " << wlon1 << " " << mGridData[ldep0](llat0, llon1) << std::endl;
+//std::cout << ldep0 << " " << llat1 << " " << llon1 << " " << wdep0 << " " << wlat1 << " " << wlon1 << " " << mGridData[ldep0](llat1, llon1) << std::endl;
+//std::cout << ldep1 << " " << llat0 << " " << llon0 << " " << wdep1 << " " << wlat0 << " " << wlon0 << " " << mGridData[ldep1](llat0, llon0) << std::endl;
+//std::cout << ldep1 << " " << llat1 << " " << llon0 << " " << wdep1 << " " << wlat1 << " " << wlon0 << " " << mGridData[ldep1](llat1, llon0) << std::endl;
+//std::cout << ldep1 << " " << llat0 << " " << llon1 << " " << wdep1 << " " << wlat0 << " " << wlon1 << " " << mGridData[ldep1](llat0, llon1) << std::endl;
+//std::cout << ldep1 << " " << llat1 << " " << llon1 << " " << wdep1 << " " << wlat1 << " " << wlon1 << " " << mGridData[ldep1](llat1, llon1) << std::endl;
+//exit(0);
+//}
 //}
 
     return true;
