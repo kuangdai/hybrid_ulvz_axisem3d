@@ -49,7 +49,7 @@ private:
     double mSrcDep = 0.;
 
     // consider vertical disc or not
-    bool mVerticalDiscontinuities = true;
+    bool mVerticalDiscontinuities = false;
     
     // data
     std::vector<RDMatXX> mGridData;
