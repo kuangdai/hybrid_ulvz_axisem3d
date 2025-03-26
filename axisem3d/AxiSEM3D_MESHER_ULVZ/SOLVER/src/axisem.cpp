@@ -261,7 +261,6 @@ extern void initializeSolverStatic(int maxNr, bool disableWisdomFFTW) {
     SolverFFTW_N6::initialize(maxNr);
     SolverFFTW_N9::initialize(maxNr);
     SolverFFTW::exportWisdom();
-    PreloopFFTW::initialize(maxNr);
     // element
     SolidElement::initWorkspace(maxNr / 2);
     FluidElement::initWorkspace(maxNr / 2);
