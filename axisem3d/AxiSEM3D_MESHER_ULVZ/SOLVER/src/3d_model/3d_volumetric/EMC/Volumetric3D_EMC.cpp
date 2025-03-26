@@ -314,9 +314,11 @@ bool Volumetric3D_EMC::get3dProperties(double r, double theta, double phi, doubl
     double lmin = mGridLat[0];
     double lmax = mGridLat[mGridLat.size() - 1];
     double lcenter = 90. - thetaElemCenter / degree;
-    if (lcenter < lmin || lcenter > lmax) {
-        return false;
-    }
+
+// THIS IS WRONG because thetaElemCenter is local
+//    if (lcenter < lmin || lcenter > lmax) {
+//        return false;
+//    }
     if (lon < lmin && lon > lmin * 0.999999) {
         lon = lmin;
     }
