@@ -231,19 +231,11 @@ bool Volumetric3D_EMC_ULVZ::get3dProperties(double r, double theta, double phi, 
         }
         // use point depth to determine value
         wdep0 = 1. - 1. / (mGridDep(ldep0 + 1) - mGridDep(ldep0)) * (dep - mGridDep(ldep0));
-        
-        // use element center lat to locate layer
-        XMath::interpLinear(lcenter, mGridLat, llat0, wlat0);
-        if (llat0 < 0) {
-            return false;
-        }
-        // use point lat to determine value
-        wlat0 = 1. - 1. / (mGridLat(llat0 + 1) - mGridLat(llat0)) * (lat - mGridLat(llat0));
     } else {
         XMath::interpLinear(dep, mGridDep, ldep0, wdep0);
-        XMath::interpLinear(lat, mGridLat, llat0, wlat0);
     }
-    XMath::interpLinear(lon, mGridLon, llon0, wlon0);    
+    XMath::interpLinear(lat, mGridLat, llat0, wlat0);
+    XMath::interpLinear(lon, mGridLon, llon0, wlon0);
     if (ldep0 < 0 || llat0 < 0 || llon0 < 0) {
         return false;
     }
