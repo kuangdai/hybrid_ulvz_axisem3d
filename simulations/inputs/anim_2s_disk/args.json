@@ -1,0 +1,74 @@
+{
+  "ulvz": {
+    "height": 20,
+    "radius_deg": 5,
+    "center_loc_by_lat_lon": false,
+    "lat": 0.0,
+    "lon": 0.0,
+    "dist": 61.0,
+    "azim": 0.0,
+    "layers": [
+      "3480000.0 -0.3 -0.1 0.05",
+      "3500000.0 -0.3 -0.1 0.05"
+    ],
+    "nc_3d": false
+  },
+  "box": {
+    "height": 10
+  },
+  "mesh": {
+    "period": 2,
+    "epw": 1.0,
+    "refinement_dvs": -0.3
+  },
+  "array": {
+    "use_grid": true,
+    "dist0_from_event": 90.0,
+    "dist1_from_event": 130.0,
+    "delta_dist": 1.0,
+    "azim0_from_ulvz": -60.0,
+    "azim1_from_ulvz": 60.0,
+    "delta_azim": 1.0
+  },
+  "wave_extrapolation": {
+    "save_outgoing": false
+  },
+  "ulvz_animation": {
+    "enabled": true,
+    "top_view_right_margin": 2.0,
+    "side_view_top_margin": 6.0,
+    "side_view_bot_margin": 6.0,
+    "sample_interval": 24,
+    "points_per_elem": 4
+  },
+  "event": {
+    "monopole": false
+  },
+  "time_series": {
+    "dt": 0.04,
+    "length": 2000.0,
+    "sample_interval": 12,
+    "half_duration_stf": 3.0
+  },
+  "slurm": {
+    "hpc": "grace",
+    "1d": {
+      "nodes": 1,
+      "nproc": 40,
+      "wct": "24:00:00"
+    },
+    "2d": {
+      "nodes": 1,
+      "nproc": 30,
+      "wct": "24:00:00"
+    },
+    "3d": {
+      "nodes": 20,
+      "nproc": 480,
+      "nproc_stf": 1,
+      "wct_mesh_info": "24:00:00",
+      "wct_stf": "24:00:00",
+      "wct_solve": "24:00:00"
+    }
+  }
+}
