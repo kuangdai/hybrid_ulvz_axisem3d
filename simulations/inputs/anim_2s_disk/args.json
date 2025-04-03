@@ -45,7 +45,7 @@
     "monopole": false
   },
   "time_series": {
-    "dt": 0.03,
+    "dt": 0.04,
     "length": 2000.0,
     "sample_interval": 12,
     "half_duration_stf": 2.0
