@@ -49,7 +49,8 @@ def truncate_and_taper(file_path, t0, t1):
     # Apply tapering to all time-dependent variables except time_points
     for var in ds.data_vars:
         if time_dim in ds[var].dims and var != time_var:
-            ds[var] = ds[var] * taper_weights[:, np.newaxis]  # Broadcasting over second dimension
+            weights = taper_weights.astype(ds[var].dtype)
+            ds[var] = ds[var] * weights[:, np.newaxis]  # Broadcasting over second dimension
 
     # Remove truncated time steps (keep only t0 and beyond)
     ds = ds.sel({time_dim: ds[time_var] >= actual_t0})
