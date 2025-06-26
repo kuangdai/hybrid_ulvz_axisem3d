@@ -157,7 +157,7 @@ double MultilevelTimer::elapsedCurrentLevel() const {
 
 /////////////////////// global multi-level timer ///////////////////////
 namespace timer {
-    MultilevelTimer gPreloopTimer = MultilevelTimer(10);
+    MultilevelTimer gPreloopTimer(10);
     
     // setup
     void setup(bool activate) {
