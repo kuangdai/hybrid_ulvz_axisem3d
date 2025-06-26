@@ -24,8 +24,24 @@ if __name__ == "__main__":
 
     # inparam.nu
     args_mesh = json.load(open(f'outputs/{run_name}/@@_exodus/args.json'))
-    replace_in_file(input_dir / 'inparam.nu',
-                    {'__NU__': args_mesh['nu_to_use']})
+    if "ignore_far_field" in args['wave_extrapolation'].keys() and args['wave_extrapolation']['ignore_far_field']:
+        replace_in_file(
+            input_dir / 'inparam.nu.local',
+            {
+                '__NU__': args_mesh['nu_to_use'],
+                '__NU_SMALL__': args['wave_extrapolation']['nu_small'],
+                '__R_LOW0__': args['wave_extrapolation']['r_low0'] * 1000.,
+                '__R_LOW1__': args['wave_extrapolation']['r_low1'] * 1000.,
+                '__R_UPP0__': args['wave_extrapolation']['r_upp0'] * 1000.,
+                '__R_UPP1__': args['wave_extrapolation']['r_upp1'] * 1000.,
+                '__THETA0__': np.deg2rad(args['wave_extrapolation']['theta0']),
+                '__THETA1__': np.deg2rad(args['wave_extrapolation']['theta1'])
+            },
+            dest=input_dir / 'inparam.nu'
+        )
+    else:
+        replace_in_file(input_dir / 'inparam.nu',
+                        {'__NU__': args_mesh['nu_to_use']})
 
     # inparam.time_src_recv
     if args['wave_extrapolation']['save_outgoing']:

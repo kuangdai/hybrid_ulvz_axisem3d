@@ -30,8 +30,16 @@
     "azim1_from_ulvz": 40.0,
     "delta_azim": 5
   },
-  "wave_extrapolation": {
-    "save_outgoing": true
+"wave_extrapolation": {
+    "save_outgoing": true,
+    "ignore_far_field": false,
+    "nu_small": 5,
+    "r_low0": 3380.0,
+    "r_low1": 3180.0,
+    "r_upp0": 3680.0,
+    "r_upp1": 3980.0,
+    "theta0": 15.0,
+    "theta1": 30.0
   },
   "ulvz_animation": {
     "enabled": false,

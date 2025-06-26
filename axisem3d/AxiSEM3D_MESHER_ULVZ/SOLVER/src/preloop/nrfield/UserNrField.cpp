@@ -21,14 +21,8 @@ int UserNrField::getNrAtPoint(const RDCol2 &coords) const {
     Geodesy::rtheta(coords, r, theta);
     double depth = Geodesy::getROuter() - r;
    
-
-    if (z < 0) return 1;
-    return 810;
-
-
- 
     // output: Fourier Expansion order nu
-    int nu = 2;
+    int nu = mParameters[0];
     
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -40,55 +34,66 @@ int UserNrField::getNrAtPoint(const RDCol2 &coords) const {
     //       that only depends on radius (depth), with a very large Nu
     //       assigned near the core-mantle boundary
     
-    // double rcmb = 3480e3;
-    // double r_low_broad = rcmb - 500e3;
-    // double r_low_narrow = rcmb - 100e3;
-    // double r_upp_narrow = rcmb + 200e3;
-    // double r_upp_broad = rcmb + 1000e3;
-    // int nu_narrow = 1000;
-    // int nu_broad = 100; 
-    double r_earth = 6371e3;
-    double r_high = r_earth - 400e3;
-    // I used 400 for the benchmark of noise-correlations with specfem, long period
-    double r_low = r_earth - 600e3;
-    // I used 600 km for the long-period specfem noise-corr benchmark
-    int nu_high = 300;
-    // I used 300 for the longperiod specfem noise-corr bm with s40rts
-    int nu_low = 0;
-
-    // first, set low nu at ep. distance larger 90 degree (laura)
-    if (theta > pi / 4) return 1;
-    // for the specfem noise-correlation benchmark, 45 degrees was used. (pi / 4)
-
-    if (r > r_high) {
-        nu = nu_high;
-        // std::cout << "above r_high" << std::endl;
-    } else if (r < r_low) {
-        nu = nu_low;
-      //  std::cout << "below r_low" << std::endl;
-    } else {
-       // std::cout << "in between" << std::endl;
-        nu = (nu_high - nu_low) / (r_high - r_low) * (r - r_low) + nu_low;
+    int nu_big = mParameters[0];
+    int nu_small = 5;
+    if (mParameters.size() >= 2) {
+        nu_small = mParameters[1];
+    }
+    double rcmb = 3480e3;
+    double r_low0 = rcmb - 100e3;
+    if (mParameters.size() >= 3) {
+        r_low0 = mParameters[2];
+    }
+    double r_low1 = rcmb - 300e3;
+    if (mParameters.size() >= 4) {
+        r_low1 = mParameters[3];
+    }
+    double r_upp0 = rcmb + 200e3;
+    if (mParameters.size() >= 5) {
+        r_upp0 = mParameters[4];
+    }
+    double r_upp1 = rcmb + 500e3;
+    if (mParameters.size() >= 6) {
+        r_upp1 = mParameters[5];
+    }
+    double theta0 = 0.25;
+    if (mParameters.size() >= 7) {
+        theta0 = mParameters[6];
+    }
+    double theta1 = 0.5;
+    if (mParameters.size() >= 8) {
+        theta1 = mParameters[7];
     }
 
-    // Kuangdai's ULVZ nu:
-    // if (r <= r_low_broad) {
-    //    nu = nu_broad;
-    // } else if (r <= r_low_narrow) {
-    //    nu = (nu_narrow - nu_broad) / (r_low_narrow - r_low_broad) * (r - r_low_broad) + nu_broad;
-    // } else if (r <= r_upp_narrow) {
-    //    nu = nu_narrow;
-    // } else if (r <= r_upp_broad) {
-    //    nu = (nu_narrow - nu_broad) / (r_upp_narrow - r_upp_broad) * (r - r_upp_broad) + nu_broad;
-    // } else {
-    //    nu = nu_broad;
-    // }
-    
+    if (r >= r_low0 && r <= r_upp0 && theta <= theta0) {
+        nu = nu_big;
+    } else if (r <= r_low1 || r >= r_upp1 || theta >= theta1) {
+        nu = nu_small;
+    } else {
+        // transition area
+        // interpolate based on radius and theta
+        double fr = 0.0;
+        if (r < r_low0) {
+            fr = (r - r_low1) / (r_low0 - r_low1); // from 0 to 1
+        } else if (r > r_upp0) {
+            fr = (r_upp1 - r) / (r_upp1 - r_upp0); // from 1 to 0
+        } else {
+            fr = 1.0;
+        }
+
+        double ft = 1.0;
+        if (theta > theta0 && theta < theta1) {
+            ft = (theta1 - theta) / (theta1 - theta0);
+        }
+
+        double weight = fr * ft;
+        nu = (int)(nu_small + weight * (nu_big - nu_small));
+    }
     // NOTE: Only edit within this box!
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
-    
+
     // get nr from nu
     int nr = 2 * nu + 1;
     if (nr <= 0) {
