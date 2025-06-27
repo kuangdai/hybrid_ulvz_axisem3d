@@ -1,7 +1,7 @@
 {
   "ulvz": {
     "height": 90,
-    "radius_deg": 10,
+    "radius_deg": 2,
     "center_loc_by_lat_lon": true,
     "lat": 64.04,
     "lon": 345.05,
@@ -14,10 +14,10 @@
     "nc_3d": false
   },
   "box": {
-    "height": 22.5
+    "height": 45
   },
   "mesh": {
-    "period": 10,
+    "period": 20,
     "epw": 1.3,
     "refinement_dvs": -0.5
   },
@@ -53,10 +53,10 @@
     "monopole": true
   },
   "time_series": {
-    "dt": 0.0,
+    "dt": 0.2,
     "length": 1000.0,
     "sample_interval": 5,
-    "half_duration_stf": 10.0,
+    "half_duration_stf": 20.0,
     "truncate_incident": true,
     "truncate_incident_t0": 550.0,
     "truncate_incident_t1": 600.0
