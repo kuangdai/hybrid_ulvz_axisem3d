@@ -154,3 +154,4 @@ cython_debug/
 .DS_Store
 AxiSEM3D_*_build
 outputs
+wave_reciprocal/input
