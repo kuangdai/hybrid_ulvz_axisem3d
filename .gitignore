@@ -155,7 +155,7 @@ cython_debug/
 AxiSEM3D_*_build
 outputs
 wave_reciprocal/input
-wave_prepare_box/element_cache
-wave_prepare_box/rotation_cache
-wave_prepare_box/surface_nodes_cache
+wave_convolve/element_cache
+wave_convolve/rotation_cache
+wave_convolve/surface_nodes_cache
 wave_reciprocal/reciprocal_simulations
