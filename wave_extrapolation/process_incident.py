@@ -68,6 +68,10 @@ if __name__ == "__main__":
     in_path = Path(args.input_path)
     with open(in_path / "02_stations/args.json", "r") as fs:
         meta = json.load(fs)
+    out_path = Path(args.output_path)
+    out_path.mkdir(parents=True, exist_ok=True)
+    with open(out_path / "args.json", "w") as fs:
+        json.dump(meta, fs)
 
     # Read grids
     grid_dist_incident = np.loadtxt(in_path / "02_stations/grid_dist.txt")
@@ -127,7 +131,5 @@ if __name__ == "__main__":
 
     # Save
     print("Saving...")
-    out_path = Path(args.output_path)
-    out_path.mkdir(parents=True, exist_ok=True)
     np.savez(out_path / f"incident_with_box_{args.medium}.npz", extrap_data)
     np.savetxt(out_path / f"incident_with_box_{args.medium}_times.txt", ds.times[t0_id:t1_id:args.time_interval])
