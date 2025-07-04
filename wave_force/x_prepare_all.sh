@@ -1,0 +1,5 @@
+python prepare_rotation.py
+python prepare_elements_solid.py
+python prepare_elements_fluid.py
+python prepare_surface_nodes_solid.py
+python prepare_surface_nodes_fluid.py
