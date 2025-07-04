@@ -49,7 +49,7 @@ def main():
 
     # 输出文件
     lines = [
-        f"{idx}_{d}_{t}_{p} FLUID {lat:.8f} {lon:.8f} dummy {dep * 1e3:.6f}"
+        f"{d}_{t}_{p} FLUID {lat:.8f} {lon:.8f} dummy {dep * 1e3:.6f}"
         for idx, (d, t, p), (lat, lon, dep) in zip(
             range(len(node_array)), node_array, gp.lld
         )
