@@ -124,7 +124,7 @@ class SolidElement(BaseElement):
         t = displacement.shape[0]
         u = displacement.reshape(t, -1)
         f_int = (self.K_total @ u.T.to(self.device)).T
-        return f_int.reshape(t, 8, 3).cpu()
+        return f_int.reshape(t, 8, 3)
 
     def compute_mass_force(self, displacement, dt):
         """
@@ -145,7 +145,7 @@ class SolidElement(BaseElement):
         acc_flat = acc.reshape(t_eff, -1)
 
         f_mass = (self.M_total @ acc_flat.T.to(self.device)).T
-        return f_mass.reshape(t_eff, 8, 3).cpu()
+        return f_mass.reshape(t_eff, 8, 3)
 
     def compute_total_force(self, displacement, dt):
         return self.compute_internal_force(displacement)[1:-1] + self.compute_mass_force(displacement, dt)
