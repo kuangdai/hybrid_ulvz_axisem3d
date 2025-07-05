@@ -209,7 +209,7 @@ class FluidElement(BaseElement):
         t = potential.shape[0]
         chi = potential.reshape(t, -1)
         f_int = (self.K_total @ chi.T.to(self.device)).T
-        return f_int.reshape(t, 8, 1).cpu()
+        return f_int.reshape(t, 8, 1)
 
     def compute_mass_force(self, potential, dt):
         """
@@ -225,7 +225,7 @@ class FluidElement(BaseElement):
 
         acc = (u_next - 2 * u_curr + u_prev) / (dt ** 2)
         f_mass = (self.M_total @ acc.T.to(self.device)).T
-        return f_mass.reshape(-1, 8, 1).cpu()
+        return f_mass.reshape(-1, 8, 1)
 
     def compute_total_force(self, potential, dt):
         return self.compute_internal_force(potential)[1:-1] + self.compute_mass_force(potential, dt)
