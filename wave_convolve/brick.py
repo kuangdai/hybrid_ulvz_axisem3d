@@ -151,10 +151,8 @@ class SolidElement(BaseElement):
         return self.compute_internal_force(displacement)[1:-1] + self.compute_mass_force(displacement, dt)
 
     @staticmethod
-    def load_from(name, device='cpu'):
-        if not name.endswith('.pt'):
-            name += '.pt'
-        data = torch.load(f'./stiffness_cache/{name}', map_location=device)
+    def load_from(path, device='cpu'):
+        data = torch.load(path, map_location=device)
         obj = SolidElement.__new__(SolidElement)
         obj.device = device
         obj.K_total = data['K'].to(device)
