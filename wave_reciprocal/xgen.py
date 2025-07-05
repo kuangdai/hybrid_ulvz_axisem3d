@@ -32,6 +32,8 @@ if __name__ == "__main__":
                         help="Station component to use.")
     parser.add_argument("--dt", type=float, default=None,
                         help="Time interval.")
+    parser.add_argument("--length", type=float, default=1000.,
+                        help="Record length.")
     args = parser.parse_args()
 
     # Prepare output
@@ -56,9 +58,14 @@ if __name__ == "__main__":
     e_rtz = s_pnt.form_RTZ_frame(e_lat, e_lon)[0]
     force_vec = e_rtz["RTZ".index(args.component)]
     s_rtz = s_pnt.form_RTZ_frame(min(s_lat + 1., 89.9999), s_lon)[0]
-    amp_r = np.dot(force_vec, s_rtz[0])
-    amp_t = np.dot(force_vec, s_rtz[1])
-    amp_z = np.dot(force_vec, s_rtz[2])
+    if args.component == "Z":
+        amp_r = 0.
+        amp_t = 0.
+        amp_z = 1.
+    else:
+        amp_r = np.dot(force_vec, s_rtz[0])
+        amp_t = np.dot(force_vec, s_rtz[1])
+        amp_z = 0.
 
     # Prepare source
     dt = args.dt
@@ -74,7 +81,9 @@ if __name__ == "__main__":
                         "__LON__": s_lon,
                         "__R__": amp_r,
                         "__T__": amp_t,
-                        "__Z__": amp_z})
+                        "__Z__": amp_z,
+                        "__LENGTH__": args.length,
+                    })
 
     # Prepare stations
     replace_in_file("../wave_convolve/surface_nodes_cache/reciprocal_stations_solid.txt",

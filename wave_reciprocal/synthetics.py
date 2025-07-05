@@ -32,7 +32,7 @@ class AxiSEM3DSyntheticsLoader:
         first_file = self.nc_path / f"axisem3d_synthetics.nc.rank{first_rank[0]}"
         with xr.open_dataset(first_file) as ds:
             self.n_dim = ds["data_wave"].shape[1]
-            self.n_time = ds["data_wave"].shape[0]
+            self.n_time = ds["data_wave"].shape[2]
             self.times = np.array(ds["data_time"].values)
 
         # Open files for read
@@ -66,12 +66,12 @@ class AxiSEM3DSyntheticsLoader:
         n_time_out = len(np.arange(start_time, end_time, time_interval))
 
         # Create
-        u = np.empty((n_time_out, self.n_dim, len(st_keys)), dtype=np.float32)
+        u = np.empty((len(st_keys), self.n_dim, n_time_out), dtype=np.float32)
 
         # Read
         for rank, (local_ids, global_ids) in rank_to_local_global.items():
-            u[:, :, global_ids] = self.data_on_rank[rank][start_time:end_time:time_interval, :, local_ids]
-        return u
+            u[global_ids, :, :] = self.data_on_rank[rank][local_ids, :, start_time:end_time:time_interval]
+        return u.transpose((2, 1, 0))
 
 
 def rotate(data, fr_frame, to_frame, batch_size, device):

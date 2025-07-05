@@ -16,7 +16,7 @@ time_axis:
     # what: record length (the end time in seismograms)
     # type: double
     # note: the start time depends on the source-time functions
-    record_length: 1000.
+    record_length: __LENGTH__
 
     # what: user-specified Δt
     # type: string / double
@@ -107,7 +107,7 @@ list_of_sources:
             # what: unit of data
             # type: double
             # note: use 1e-7 to convert dyn*cm (in CMTSOLUTION) to N*m
-            unit: 1e5
+            unit: 1e20
         # source time function
         source_time_function:
             # what: class name
