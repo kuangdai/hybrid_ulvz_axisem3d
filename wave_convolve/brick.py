@@ -49,21 +49,35 @@ def _shape_function_derivatives(xi, eta, zeta):
 
 def _build_B_matrix(dN_dx):
     """
-    构造6x24 B矩阵
+    构造6x24标准B矩阵，严格符合小应变张量Voigt定义：
+
+    Voigt顺序：
+    0 - ε_xx
+    1 - ε_yy
+    2 - ε_zz
+    3 - ε_yz
+    4 - ε_xz
+    5 - ε_xy
     """
     B = torch.zeros((6, 24))
     for i in range(8):
         idx = i * 3
         dNxi, dNyi, dNzi = dN_dx[i]
-        B[0, idx] = dNxi
-        B[1, idx + 1] = dNyi
-        B[2, idx + 2] = dNzi
-        B[3, idx] = dNyi
-        B[3, idx + 1] = dNxi
-        B[4, idx + 1] = dNzi
-        B[4, idx + 2] = dNyi
-        B[5, idx] = dNzi
-        B[5, idx + 2] = dNxi
+
+        # 正确的主对角线分量
+        B[0, idx] = dNxi  # ∂u_x / ∂x
+        B[1, idx + 1] = dNyi  # ∂u_y / ∂y
+        B[2, idx + 2] = dNzi  # ∂u_z / ∂z
+
+        # 对称剪切分量
+        B[3, idx + 1] = dNzi  # ∂u_y / ∂z
+        B[3, idx + 2] = dNyi  # ∂u_z / ∂y
+
+        B[4, idx] = dNzi  # ∂u_x / ∂z
+        B[4, idx + 2] = dNxi  # ∂u_z / ∂x
+
+        B[5, idx] = dNyi  # ∂u_x / ∂y
+        B[5, idx + 1] = dNxi  # ∂u_y / ∂x
     return B
 
 
@@ -184,5 +198,3 @@ class SolidElement:
         u = u.to(self.device)
         disp = torch.einsum('gn, tnc -> tgc', self.face_shape_func, u)
         return disp
-
-
