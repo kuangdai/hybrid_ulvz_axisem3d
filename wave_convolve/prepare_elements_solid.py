@@ -66,7 +66,7 @@ def main():
 
             nodes = np.array(nodes)
             element = SolidElement(nodes, lambda_g, mu_g, rho_g)
-            name = f'solid_top_p{ip}_t{it}.pt'
+            name = f'solid_top_p{ip}_t{it}'
             element.save_to(name, save_dir)
 
             # 存储connectivity
@@ -116,7 +116,7 @@ def main():
 
             nodes = np.array(nodes)
             element = SolidElement(nodes, lambda_g, mu_g, rho_g)
-            name = f'solid_side_p{ip}_d{id}.pt'
+            name = f'solid_side_p{ip}_d{id}'
             element.save_to(name, save_dir)
 
             # 存储connectivity

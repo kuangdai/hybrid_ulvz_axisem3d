@@ -66,7 +66,7 @@ def main():
 
             nodes = np.array(nodes)
             element = FluidElement(nodes, rho_g, kappa_g)
-            name = f'fluid_bottom_p{ip}_t{it}.pt'
+            name = f'fluid_bottom_p{ip}_t{it}'
             element.save_to(name, save_dir)
 
             # 存储connectivity
@@ -115,7 +115,7 @@ def main():
 
             nodes = np.array(nodes)
             element = FluidElement(nodes, rho_g, kappa_g)
-            name = f'fluid_side_p{ip}_d{id}.pt'
+            name = f'fluid_side_p{ip}_d{id}'
             element.save_to(name, save_dir)
 
             # 存储connectivity
