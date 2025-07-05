@@ -77,10 +77,10 @@ if __name__ == "__main__":
                         "__Z__": amp_z})
 
     # Prepare stations
-    replace_in_file("../wave_prepare_box/surface_nodes_cache/reciprocal_stations_solid.txt",
+    replace_in_file("../wave_convolve/surface_nodes_cache/reciprocal_stations_solid.txt",
                     replace_dict={},
                     dest=f"{out_dir}/reciprocal_stations_solid.txt")
-    replace_in_file("../wave_prepare_box/surface_nodes_cache/reciprocal_stations_fluid.txt",
+    replace_in_file("../wave_convolve/surface_nodes_cache/reciprocal_stations_fluid.txt",
                     replace_dict={},
                     dest=f"{out_dir}/reciprocal_stations_fluid.txt")
 
@@ -92,4 +92,7 @@ if __name__ == "__main__":
             "station_lon": args.station_lon
         }, fs)
 
-# python xgen.py --run-name test --station-name US.ERP --station-lat 42.12 --station-lon 280.01 --component T
+# Example
+"""
+python xgen.py --run-name test --station-name US.ERP --station-lat 42.12 --station-lon 280.01 --component T
+"""
