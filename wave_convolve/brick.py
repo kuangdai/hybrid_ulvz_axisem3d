@@ -152,7 +152,7 @@ class SolidElement(BaseElement):
 
     @staticmethod
     def load_from(path, device='cpu'):
-        data = torch.load(path, map_location=device)
+        data = torch.load(path, map_location=device, weights_only=False)
         obj = SolidElement.__new__(SolidElement)
         obj.device = device
         obj.K_total = data['K'].to(device)
@@ -232,7 +232,7 @@ class FluidElement(BaseElement):
 
     @staticmethod
     def load_from(path, device='cpu'):
-        data = torch.load(path, map_location=device)
+        data = torch.load(path, map_location=device, weights_only=False)
         obj = FluidElement.__new__(FluidElement)
         obj.device = device
         obj.K_total = data['K'].to(device)
