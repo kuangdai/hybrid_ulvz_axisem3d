@@ -1,5 +1,7 @@
-import numpy as np
 import os
+
+import numpy as np
+
 
 def compute_rtz_to_xyz_matrix(theta, phi):
     """
@@ -14,8 +16,8 @@ def compute_rtz_to_xyz_matrix(theta, phi):
 
     R = np.array([
         [sin_th * cos_ph, cos_th * cos_ph, -sin_ph],
-        [sin_th * sin_ph, cos_th * sin_ph,  cos_ph],
-        [cos_th,         -sin_th,          0.0]
+        [sin_th * sin_ph, cos_th * sin_ph, cos_ph],
+        [cos_th, -sin_th, 0.0]
     ])
     return R
 
