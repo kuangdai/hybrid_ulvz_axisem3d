@@ -120,6 +120,8 @@ def _compute_stress2traction(face_node_pos, gp_index):
     point_prev = face_node_pos[gp_index - 1]
     vec1 = point_self - point_prev
     vec2 = point_next - point_self
+    # 计算面单元当前高斯点贡献的带面积法向
+    # cross结果为平行四边形面积，乘0.5对应四边形的四分之一，可直接用于积分权重
     normal = 0.5 * torch.cross(vec1, vec2)
 
     # 构造 P矩阵： σ → t 转换，以满足Voigt格式
