@@ -166,28 +166,13 @@ class SolidElement:
         """
         预计算面上所有矩阵
         """
-        node_pos = torch.tensor(node_pos, dtype=torch.float32)
-        face_node_dict = {
-            1: [0, 4, 7, 3],  # x = -1
-            2: [1, 2, 6, 5],  # x = +1
-            3: [0, 1, 5, 4],  # y = -1
-            4: [2, 3, 7, 6],  # y = +1
-            5: [0, 3, 2, 1],  # z = -1
-            6: [4, 5, 6, 7]  # z = +1
-        }
-        face_dim_direction_dict = {
-            1: [0, -1],
-            2: [0, 1],
-            3: [1, -1],
-            4: [1, 1],
-            5: [2, -1],
-            6: [2, 1],
-        }
         # 定义三维 8 个 Gauss 点位置
         sqrt3_inv = 1.0 / np.sqrt(3)
         gauss_1d = torch.tensor([-sqrt3_inv, sqrt3_inv])
         gauss_3d = torch.stack(torch.meshgrid(
             gauss_1d, gauss_1d, gauss_1d, indexing='ij'), dim=-1).reshape(-1, 3)
+
+        # 定义面
 
         # 节点编号示意：
         #   7 -------- 6
@@ -197,33 +182,60 @@ class SolidElement:
         # | 3 -------| 2
         # |/         |/
         # 0 -------- 1
+        face_node_dict = {
+            1: [0, 4, 7, 3],  # x = -1
+            2: [1, 2, 6, 5],  # x = +1
+            3: [0, 1, 5, 4],  # y = -1
+            4: [2, 3, 7, 6],  # y = +1
+            5: [0, 3, 2, 1],  # z = -1
+            6: [4, 5, 6, 7]  # z = +1
+        }
+        face_dim_direction_dict = {
+            1: [0, -1],  # [dim, face position]
+            2: [0, 1],
+            3: [1, -1],
+            4: [1, 1],
+            5: [2, -1],
+            6: [2, 1],
+        }
 
         face_node_idx = face_node_dict[self.gamma_face_index]
-        node_pos_face = node_pos[face_node_idx]
-        gauss_pos_face = gauss_3d[face_node_idx]
         dim, pos = face_dim_direction_dict[self.gamma_face_index]
-        gauss_pos_face[:, dim] = pos
 
+        # 面上节点坐标
+        node_pos = torch.tensor(node_pos, dtype=torch.float32)
+        node_pos_face = node_pos[face_node_idx]
+
+        # 面上Gauss点坐标
+        gauss_pos_face = gauss_3d[face_node_idx]  # 快速从三维获取
+        gauss_pos_face[:, dim] = pos  # 将三维投影到面上
+
+        # 对Gauss点循环
         face_disp2stress, face_stress2traction, face_node2gauss = [], [], []
-
         for gp in range(4):
+            # 形函数，将节点位移map到面上Gauss点位移
             xi, eta, zeta = gauss_pos_face[gp]
             N = _shape_function(xi, eta, zeta)
             face_node2gauss.append(N)
 
+            # 应变矩阵
             dN_dxi = _shape_function_derivatives(xi, eta, zeta)
             J = dN_dxi.T @ node_pos
             invJ = torch.inverse(J)
             dN_dx = dN_dxi @ invJ.T
             B = _build_B_matrix(dN_dx)
 
+            # 刚度矩阵
             lam, mu = lambda_g[gp], mu_g[gp]
             D = torch.zeros((6, 6))
             D[0, 0] = D[1, 1] = D[2, 2] = lam + 2 * mu
             D[3, 3] = D[4, 4] = D[5, 5] = mu
             D[0, 1] = D[0, 2] = D[1, 0] = D[1, 2] = D[2, 0] = D[2, 1] = lam
 
+            # 位移->应力矩阵
             face_disp2stress.append(D @ B)
+
+            # 应力->牵引力矩阵
             face_stress2traction.append(_compute_stress2traction(node_pos_face, gp))
 
         self.face_disp2stress = torch.stack(face_disp2stress, dim=0).to(self.device)
