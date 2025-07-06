@@ -84,7 +84,7 @@ def fft_convolve_multidim(a, b, sum_dim=True):
     N = L1 + L2 - 1  # 理论卷积长度
     n_fft = 2 ** int(np.ceil(np.log2(N)))  # 2的幂次，保障FFT高效
 
-    # 执行FFT，使用norm='forward'确保严格能量一致性
+    # 执行FFT，使用forward确保严格能量一致性
     A = torch.fft.rfft(a, n=n_fft, dim=0, norm='forward')  # [fft_len, d]
     B = torch.fft.rfft(b, n=n_fft, dim=0, norm='forward')
     C = A * B  # 逐通道频域乘积
