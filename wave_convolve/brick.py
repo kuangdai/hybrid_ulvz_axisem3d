@@ -210,8 +210,7 @@ class Element:
     def __init__(self, gamma_face_index, device="cpu"):
         self.gamma_face_index = gamma_face_index
         self.device = device
-        self.face_disp2stress = None
-        self.face_stress2traction = None
+        self.face_disp2traction = None
         self.face_node2gauss = None
 
     def _compute_traction(self, u):
@@ -223,16 +222,10 @@ class Element:
         u = u.to(self.device)  # u: [time, 8, 3]
         u = u.reshape(u.shape[0], -1)  # u: [time, 24]
 
-        # face_disp2stress: [4, 6, 24]
+        # face_disp2traction: [4, 3, 24]
         # u: [time, 24]
-        # stress: [time, 4, 6]
-        stress = torch.einsum('gsn, tn -> tgs', self.face_disp2stress, u)
-
-        # face_stress2traction: [4, 3, 6]
-        # stress: [time, 4, 6]
         # traction: [time, 4, 3]
-        traction = torch.einsum('gcs, tgs -> tgc', self.face_stress2traction, stress)
-
+        traction = torch.einsum('gcn, tn -> tgc', self.face_disp2traction, u)
         return traction
 
     def _compute_disp_gauss(self, u):
@@ -296,117 +289,124 @@ class Element:
 
 
 class SolidElement(Element):
-    def __init__(self, node_pos, lambda_g, mu_g, gamma_face_index, device="cpu"):
+    def __init__(self, node_pos, lambda_n, mu_n, gamma_face_index, device="cpu"):
         """
-        初始化SolidElement
-        :param node_pos: (8, 3) 节点坐标
-        :param lambda_g: (8,) Lamé 参数 λ
-        :param mu_g: (8,) 剪切模量 μ
-        :param gamma_face_index: 1~6 指定面编号
+        初始化 SolidElement，仅输入节点物理参数，自动插值至Gauss点
+        :param node_pos: [8, 3] 节点坐标
+        :param lambda_n: [8] 节点Lamé参数 λ
+        :param mu_n: [8] 节点剪切模量 μ
+        :param gamma_face_index: int，面编号 1~6
         """
         super().__init__(gamma_face_index, device)
-        self._precompute(node_pos, lambda_g, mu_g)
+        self._precompute(node_pos, lambda_n, mu_n)
 
-    def _precompute(self, node_pos, lambda_g, mu_g):
+    def _precompute(self, node_pos, lambda_n, mu_n):
         """
-        预计算面上所有矩阵
+        预计算面上各矩阵：形函数、位移→应力、应力→牵引力
+        物理参数通过节点值自动插值至Gauss点
         """
-        # 定义面
+        # 面定义
         face_node_idx = face_node_dict[self.gamma_face_index]
         dim, pos = face_dim_direction_dict[self.gamma_face_index]
 
-        # 面上节点坐标
+        # 节点坐标
         if not isinstance(node_pos, torch.Tensor):
             node_pos = torch.tensor(node_pos, dtype=torch.float32)
         node_pos_face = node_pos[face_node_idx]
 
-        # 面上Gauss点坐标
-        gauss_pos_face = gauss_3d[face_node_idx]  # 快速从三维获取
-        gauss_pos_face[:, dim] = pos  # 将三维投影到面上
+        # 面上Gauss点局部坐标
+        gauss_pos_face = gauss_3d[face_node_idx]
+        gauss_pos_face[:, dim] = pos
 
-        # 对Gauss点循环
-        face_disp2stress, face_stress2traction, face_node2gauss = [], [], []
+        # 预计算矩阵
+        face_disp2traction, face_node2gauss = [], []
         for gp in range(4):
-            # 形函数，将节点位移map到面上Gauss点位移
             xi, eta, zeta = gauss_pos_face[gp]
+
+            # 形函数：节点值插值到Gauss点
             N = _shape_function(xi, eta, zeta)
             face_node2gauss.append(N)
 
-            # 应变矩阵
+            lam = torch.sum(N * lambda_n)
+            mu = torch.sum(N * mu_n)
+
+            # 位移->应变
             dN_dxi = _shape_function_derivatives(xi, eta, zeta)
             J = dN_dxi.T @ node_pos
             invJ = torch.inverse(J)
             dN_dx = dN_dxi @ invJ.T
-            B = _build_B_matrix(dN_dx)
+            B = _build_B_matrix(dN_dx)  # [6, 24]
 
-            # 刚度矩阵
-            lam, mu = lambda_g[gp], mu_g[gp]
-            D = torch.zeros((6, 6))
+            # 位移->应力
+            D = torch.zeros((6, 6))  # [6, 24]
             D[0, 0] = D[1, 1] = D[2, 2] = lam + 2 * mu
             D[3, 3] = D[4, 4] = D[5, 5] = mu
             D[0, 1] = D[0, 2] = D[1, 0] = D[1, 2] = D[2, 0] = D[2, 1] = lam
 
-            # 位移->应力矩阵
-            face_disp2stress.append(D @ B)
+            # 应力->牵引力
+            F = _compute_stress2traction(node_pos_face, gp, voigt_solid=True)  # [3, 6]
 
-            # 应力->牵引力矩阵
-            face_stress2traction.append(_compute_stress2traction(node_pos_face, gp, True))
+            # 合并
+            face_disp2traction.append(F @ D @ B)  # [3, 6, 24]
 
-        self.face_disp2stress = torch.stack(face_disp2stress, dim=0).to(self.device)
-        self.face_stress2traction = torch.stack(face_stress2traction, dim=0).to(self.device)
+        # 存储
+        self.face_disp2traction = torch.stack(face_disp2traction, dim=0).to(self.device)
         self.face_node2gauss = torch.stack(face_node2gauss, dim=0).to(self.device)
 
 
 class FluidElement(Element):
-    def __init__(self, node_pos, rho_g, gamma_face_index, device="cpu"):
+    def __init__(self, node_pos, rho_n, gamma_face_index, device="cpu"):
         """
-        初始化FluidElement
+        初始化 FluidElement，节点输入，自动插值密度
         :param node_pos: (8, 3) 节点坐标
-        :param rho_g: (8,) 密度 ρ
+        :param rho_n: (8,) 节点密度 ρ
         :param gamma_face_index: 1~6 指定面编号
         """
         super().__init__(gamma_face_index, device)
-        self._precompute(node_pos, rho_g)
+        self._precompute(node_pos, rho_n)
 
-    def _precompute(self, node_pos, rho_g):
+    def _precompute(self, node_pos, rho_n):
         """
-        预计算面上所有矩阵
+        预计算面上所有矩阵，密度通过形函数自动插值
         """
-        # 定义面
+        # 面节点
         face_node_idx = face_node_dict[self.gamma_face_index]
         dim, pos = face_dim_direction_dict[self.gamma_face_index]
 
-        # 面上节点坐标
+        # 坐标准备
         if not isinstance(node_pos, torch.Tensor):
             node_pos = torch.tensor(node_pos, dtype=torch.float32)
         node_pos_face = node_pos[face_node_idx]
 
-        # 面上Gauss点坐标
-        gauss_pos_face = gauss_3d[face_node_idx]  # 快速从三维获取
-        gauss_pos_face[:, dim] = pos  # 将三维投影到面上
+        # 面上 Gauss 点局部坐标
+        gauss_pos_face = gauss_3d[face_node_idx]
+        gauss_pos_face[:, dim] = pos
 
-        # 对Gauss点循环
-        face_disp2stress, face_stress2traction, face_node2gauss = [], [], []
+        face_disp2traction, face_node2gauss = [], []
+
         for gp in range(4):
-            # 形函数，将节点位移map到面上Gauss点位移
             xi, eta, zeta = gauss_pos_face[gp]
+
+            # 形函数：节点值插值到 Gauss 点
             N = _shape_function(xi, eta, zeta)
             face_node2gauss.append(N)
 
-            # 势函数->位移矩阵
+            rho = torch.sum(N * rho_n)  # 密度插值
+
+            # 势函数 -> 位移梯度
             dN_dxi = _shape_function_derivatives(xi, eta, zeta)
             J = dN_dxi.T @ node_pos
             invJ = torch.inverse(J)
             dN_dx = dN_dxi @ invJ.T
+            B = dN_dx.T  # [3, 8]
 
-            # 势函数->应力矩阵
-            face_disp2stress.append(dN_dx.T / rho_g[gp])
+            # 位移梯度 -> 牵引力
+            F = _compute_stress2traction(node_pos_face, gp, voigt_solid=False)  # [1, 3]
 
-            # 应力->牵引力矩阵
-            face_stress2traction.append(_compute_stress2traction(node_pos_face, gp, False))
+            # 合并
+            face_disp2traction.append(F @ (B / rho))  # [1, 8]
 
-        self.face_disp2stress = torch.stack(face_disp2stress, dim=0).to(self.device)
-        self.face_stress2traction = torch.stack(face_stress2traction, dim=0).to(self.device)
+        self.face_disp2traction = torch.stack(face_disp2traction, dim=0).to(self.device)
         self.face_node2gauss = torch.stack(face_node2gauss, dim=0).to(self.device)
 
 
