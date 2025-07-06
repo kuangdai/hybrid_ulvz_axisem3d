@@ -351,8 +351,8 @@ class SolidElement(Element):
             N = _shape_function(xi, eta, zeta)
             face_node2gauss.append(N)
 
-            lam = torch.sum(N * lambda_n)
-            mu = torch.sum(N * mu_n)
+            lam = torch.sum(N * torch.tensor(lambda_n, dtype=torch.float32))
+            mu = torch.sum(N * torch.tensor(mu_n, dtype=torch.float32))
 
             # 位移->应变
             dN_dxi = _shape_function_derivatives(xi, eta, zeta)
@@ -415,7 +415,7 @@ class FluidElement(Element):
             N = _shape_function(xi, eta, zeta)
             face_node2gauss.append(N)
 
-            rho = torch.sum(N * rho_n)  # 密度插值
+            rho = torch.sum(N * torch.tensor(rho_n, dtype=torch.float32))  # 密度插值
 
             # 势函数 -> 位移梯度
             dN_dxi = _shape_function_derivatives(xi, eta, zeta)
