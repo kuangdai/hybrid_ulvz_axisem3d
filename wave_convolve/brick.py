@@ -213,6 +213,30 @@ class Element:
         self.face_disp2traction = None
         self.face_node2gauss = None
 
+    def save_to(self, filename):
+        """
+        保存 Element 关键矩阵到文件，便于重用、跨平台部署
+        :param filename: 保存路径（.pt 文件）
+        """
+        state = {
+            'gamma_face_index': self.gamma_face_index,
+            'face_disp2traction': self.face_disp2traction.cpu(),  # 存盘统一转CPU，兼容性好
+            'face_node2gauss': self.face_node2gauss.cpu()
+        }
+        torch.save(state, filename)
+
+    def load_from(self, filename, device="cpu"):
+        """
+        从文件加载 Element 矩阵，支持切换计算设备
+        :param filename: .pt 文件路径
+        :param device: 目标计算设备
+        """
+        state = torch.load(filename, map_location=device, weights_only=False)
+        self.gamma_face_index = state['gamma_face_index']
+        self.face_disp2traction = state['face_disp2traction'].to(device)
+        self.face_node2gauss = state['face_node2gauss'].to(device)
+        self.device = device
+
     def _compute_traction(self, u):
         """
         计算面上牵引力
