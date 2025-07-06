@@ -158,8 +158,8 @@ if __name__ == "__main__":
 
     # Stations 字符串拼接
     lines = [
-        f"{d}_{t}_{p} {medium.upper()} {lat:.8f} {lon:.8f} dummy {dep * 1e3:.6f}"
-        for (d, t, p), (lat, lon, dep) in zip(
+        f"{t}_{p}_{d} {medium.upper()} {lat:.8f} {lon:.8f} dummy {dep * 1e3:.6f}"
+        for (t, p, d), (lat, lon, dep) in zip(
             idx_unique, gp.lld
         )
     ]
