@@ -225,17 +225,19 @@ class Element:
         }
         torch.save(state, filename)
 
-    def load_from(self, filename, device="cpu"):
+    @classmethod
+    def load_from(cls, filename, device="cpu"):
         """
-        从文件加载 Element 矩阵，支持切换计算设备
+        从文件加载 Element 矩阵，返回新对象，支持切换计算设备
         :param filename: .pt 文件路径
         :param device: 目标计算设备
+        :return: Element 实例
         """
         state = torch.load(filename, map_location=device, weights_only=False)
-        self.gamma_face_index = state['gamma_face_index']
-        self.face_disp2traction = state['face_disp2traction'].to(device)
-        self.face_node2gauss = state['face_node2gauss'].to(device)
-        self.device = device
+        obj = cls(gamma_face_index=state['gamma_face_index'], device=device)
+        obj.face_disp2traction = state['face_disp2traction'].to(device)
+        obj.face_node2gauss = state['face_node2gauss'].to(device)
+        return obj
 
     def _compute_traction(self, u):
         """
