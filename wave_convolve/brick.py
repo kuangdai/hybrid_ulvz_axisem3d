@@ -338,7 +338,7 @@ class SolidElement(Element):
             B = _build_B_matrix(dN_dx)  # [6, 24]
 
             # 位移->应力
-            D = torch.zeros((6, 6))  # [6, 24]
+            D = torch.zeros((6, 6))  # [6, 6]
             D[0, 0] = D[1, 1] = D[2, 2] = lam + 2 * mu
             D[3, 3] = D[4, 4] = D[5, 5] = mu
             D[0, 1] = D[0, 2] = D[1, 0] = D[1, 2] = D[2, 0] = D[2, 1] = lam
