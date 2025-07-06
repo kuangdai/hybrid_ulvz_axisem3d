@@ -28,7 +28,7 @@ def build_solid_element(node_indices, face_index, name):
         mu_n.append(mu)
 
     element = SolidElement(node_xyz, lambda_n, mu_n, gamma_face_index=face_index)
-    element.save_to(f"{save_dir}/{name}.pt")
+    element.save_to(f"{save_dir}/{medium}_elements/{name}.pt")
 
 
 def build_fluid_element(node_indices, face_index, name):
@@ -58,8 +58,9 @@ if __name__ == "__main__":
     # 路径设置
     grid_path = '../wave_extrapolation/outputs'
     prem_path = './prem_1s.csv'
-    save_dir = "./element_cache"
+    save_dir = "./precomputed"
     os.makedirs(save_dir, exist_ok=True)
+    os.makedirs(save_dir + f"/{medium}_elements", exist_ok=True)
 
     R_earth = 6371000.0  # 地球半径，单位 m
     prem = PREM(prem_path)  # 1D模型
@@ -165,3 +166,4 @@ if __name__ == "__main__":
 
     with open(f"{save_dir}/reciprocal_stations_{medium}.txt", "w") as fs:
         fs.write("\n".join(lines) + "\n")
+    np.savetxt(f"{save_dir}/reciprocal_nodes_{medium}.txt", idx_unique, fmt="%d")

@@ -25,7 +25,7 @@ def compute_rtz_to_xyz_matrix(theta, phi):
 def main():
     # 路径
     grid_path = '../wave_extrapolation/outputs'
-    save_dir = './rotation_cache'
+    save_dir = './precomputed'
     os.makedirs(save_dir, exist_ok=True)
 
     # 读取网格
