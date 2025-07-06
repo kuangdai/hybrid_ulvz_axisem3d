@@ -110,7 +110,7 @@ def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
     point_prev = face_node_pos[gp_index - 1]
     vec1 = point_self - point_prev
     vec2 = point_next - point_self
-    normal = 0.5 * torch.cross(vec1, vec2, dim=-1)  # 四边形1/4面积法向
+    normal = 0.25 * torch.cross(vec1, vec2, dim=-1)  # 四边形1/4面积法向
 
     if not voigt_solid:
         return normal.unsqueeze(0)  # (1, 3)，Fluid模式直接返回矢量
@@ -445,56 +445,44 @@ class FluidElement(Element):
 
 def main():
     """
-    生成一个标准立方体单元，随机两个场，分别使用 Solid 和 Fluid 单元计算卷积积分
+    生成单位立方体，顶面施加均匀竖直位移，打印面上Gauss点的位移与牵引力
     """
-    torch.manual_seed(0)
-
-    # ------------------ 生成单元 ------------------
-    # 标准立方体节点坐标 [-1, 1] 空间
+    # 单元节点坐标，立方体 [-0.5, 0.5]
     node_pos = torch.tensor([
-        [-1, -1, -1],
-        [1, -1, -1],
-        [1, 1, -1],
-        [-1, 1, -1],
-        [-1, -1, 1],
-        [1, -1, 1],
-        [1, 1, 1],
-        [-1, 1, 1]
+        [-0.5, -0.5, -0.5],
+        [ 0.5, -0.5, -0.5],
+        [ 0.5,  0.5, -0.5],
+        [-0.5,  0.5, -0.5],
+        [-0.5, -0.5,  0.5],
+        [ 0.5, -0.5,  0.5],
+        [ 0.5,  0.5,  0.5],
+        [-0.5,  0.5,  0.5],
     ], dtype=torch.float32)
 
-    # 物性参数
-    lambda_g = torch.ones(8) * 2.0
-    mu_g = torch.ones(8) * 1.0
-    rho_g = torch.ones(8) * 1.0
+    # 物性参数，均匀各向同性
+    lambda_n = torch.ones(8) * 2.0
+    mu_n = torch.ones(8) * 1.0
 
-    gamma_face = 6  # 选择 z=+1 面
+    # 选择顶面 z = +0.5
+    gamma_face = 6
 
-    # Solid 单元
-    solid_elem = SolidElement(node_pos, lambda_g, mu_g, gamma_face_index=gamma_face, device="cpu")
+    # 初始化Solid单元
+    elem = SolidElement(node_pos, lambda_n, mu_n, gamma_face_index=gamma_face)
 
-    # Fluid 单元
-    fluid_elem = FluidElement(node_pos, rho_g, gamma_face_index=gamma_face, device="cpu")
+    # 生成位移场：顶面节点（4,7,6,5）z方向均匀+0.01，其他为0
+    u = torch.zeros(1, 8, 3)
+    top_nodes = [4, 5, 6, 7]
+    u[0, top_nodes, 0] = 1.0
 
-    # ------------------ 生成两个随机场 ------------------
-    T_near = 100
-    T_recip = 80
+    # 计算Gauss点位移与牵引力
+    ug = elem._compute_disp_gauss(u)[0]  # [4,3]
+    tg = elem._compute_traction(u)[0]    # [4,3]
 
-    # Solid：8节点3方向
-    u_near_solid = torch.randn(T_near, 8, 3)
-    u_recip_solid = torch.randn(T_recip, 8, 3)
+    print("面上4个Gauss点位移 [x, y, z]：")
+    print(ug)
 
-    # Fluid：8节点1方向
-    u_near_fluid = torch.randn(T_near, 8, 1)
-    u_recip_fluid = torch.randn(T_recip, 8, 1)
-
-    # ------------------ 计算卷积积分 ------------------
-    result_solid = solid_elem.compute_convolve(u_near_solid, u_recip_solid)  # [T_near + T_recip - 1]
-    result_fluid = fluid_elem.compute_convolve(u_near_fluid, u_recip_fluid)  # [T_near + T_recip - 1]
-
-    print("Solid 单元卷积结果长度:", result_solid.shape)
-    print("Fluid 单元卷积结果长度:", result_fluid.shape)
-    print("Solid 前5项:", result_solid[:5])
-    print("Fluid 前5项:", result_fluid[:5])
+    print("\n面上4个Gauss点牵引力 [x, y, z]：")
+    print(tg)
 
 
 if __name__ == "__main__":
