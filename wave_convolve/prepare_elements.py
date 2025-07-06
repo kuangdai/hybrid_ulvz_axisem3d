@@ -113,7 +113,7 @@ if __name__ == "__main__":
         lower = 0
         upper = Nd - 2
     for ip in range(Np):
-        for id_ in range(1, Nd - 1):
+        for id_ in range(lower, upper):
             ip_next = (ip + 1) % Np
 
             indices = [
@@ -144,13 +144,14 @@ if __name__ == "__main__":
             if (t, p, d) not in idx_unique:
                 idx_unique.append((t, p, d))
     idx_unique = np.array(idx_unique)
+    print(f'✅ Unique节点数: {len(idx_unique)}')
 
     # 构造 GeoPoints
-    r_vals = 6371.0 - depths[idx_unique[:, 2]] / 1000.
+    r_vals = R_earth - depths[idx_unique[:, 2]]
     t_vals = thetas[idx_unique[:, 0]]
     p_vals = phis[idx_unique[:, 1]]
-    rtp = np.stack([r_vals, t_vals, p_vals], axis=1)
-    gp = GeoPoints.create_rtp_src_centered(rtp, src_lat=meta["ulvz_lat"], src_lon=meta["ulvz_lon"])
+    rtp = np.stack([r_vals / 1000., t_vals, p_vals], axis=1)  # r in km
+    gp = GeoPoints.create_rtp_src_centered(rtp, src_lat=ulvz_lat, src_lon=ulvz_lon)
 
     # Stations 字符串拼接
     lines = [
