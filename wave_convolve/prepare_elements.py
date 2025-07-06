@@ -10,13 +10,12 @@ from prem import PREM
 
 
 def build_solid_element(node_indices, face_index, name):
-    node_rtp, node_xyz, lambda_n, mu_n = [], [], [], []
+    node_xyz, lambda_n, mu_n = [], [], []
 
     for t_, p_, d_ in node_indices:
         r = R_earth - depths[d_]
         th = thetas[t_]
         ph = phis[p_]
-        node_rtp.append([r, th, ph])
 
         x = r * np.sin(th) * np.cos(ph)
         y = r * np.sin(th) * np.sin(ph)
@@ -32,13 +31,12 @@ def build_solid_element(node_indices, face_index, name):
 
 
 def build_fluid_element(node_indices, face_index, name):
-    node_rtp, node_xyz, rho_n = [], [], []
+    node_xyz, rho_n = [], []
 
     for t_, p_, d_ in node_indices:
         r = R_earth - depths[d_]
         th = thetas[t_]
         ph = phis[p_]
-        node_rtp.append([r, th, ph])
 
         x = r * np.sin(th) * np.cos(ph)
         y = r * np.sin(th) * np.sin(ph)
