@@ -45,7 +45,7 @@ def build_fluid_element(node_indices, face_index, name):
         z = r * np.cos(th)
         node_xyz.append([x, y, z])
 
-        kappa, rho = prem.query_solid(r)
+        kappa, rho = prem.query_fluid(r)
         rho_n.append(rho)
 
     element = FluidElement(node_xyz, rho_n, gamma_face_index=face_index)
@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 (Nt - 2, ip_next, id_ + 1),
                 (Nt - 1, ip_next, id_ + 1)
             ]
-            build_solid_element(indices, 2, f"{medium}_{len(connectivity)}")
+            build_fluid_element(indices, 2, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
 
     print(f'✅ 最大theta层单元共 {Np} × {Nd - 2} 个完成')
