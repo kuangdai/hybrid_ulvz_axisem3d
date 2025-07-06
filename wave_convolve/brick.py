@@ -249,17 +249,17 @@ class SolidElement:
         :return: traction [4, 3, time]  Gauss点、方向、时间
         """
         u = u.to(self.device)  # u: [time, 8, 3]
-        n_time = u.shape[0]
-        u = u.reshape(n_time, 24)  # u: [time, 24]
+        u = u.reshape(u.shape[0], 24)  # u: [time, 24]
 
-        stress = torch.einsum('gsn, tn -> tgs', self.face_disp2stress, u)
         # face_disp2stress: [4, 6, 24]
+        # u: [time, 24]
         # stress: [time, 4, 6]
+        stress = torch.einsum('gsn, tn -> tgs', self.face_disp2stress, u)
 
-        traction = torch.einsum('gcs, tgs -> tgc', self.face_stress2traction, stress)
         # face_stress2traction: [4, 3, 6]
         # stress: [time, 4, 6]
         # traction: [time, 4, 3]
+        traction = torch.einsum('gcs, tgs -> tgc', self.face_stress2traction, stress)
 
         return traction
 
@@ -271,10 +271,10 @@ class SolidElement:
         """
         u = u.to(self.device)  # u: [time, 8, 3]
 
-        disp = torch.einsum('gn, tnc -> tgc', self.face_node2gauss, u)
         # face_node2gauss: [4, 8]
         # u: [time, 8, 3]
         # disp: [time, 4, 3]
+        disp = torch.einsum('gn, tnc -> tgc', self.face_node2gauss, u)
 
         return disp
 
