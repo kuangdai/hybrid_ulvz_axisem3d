@@ -234,9 +234,16 @@ class Element:
         :return: Element 实例
         """
         state = torch.load(filename, map_location=device, weights_only=False)
-        obj = cls(gamma_face_index=state['gamma_face_index'], device=device)
+
+        # 跳过 __init__ 直接创建对象
+        obj = cls.__new__(cls)
+
+        # 手动填充属性
+        obj.gamma_face_index = state['gamma_face_index']
         obj.face_disp2traction = state['face_disp2traction'].to(device)
         obj.face_node2gauss = state['face_node2gauss'].to(device)
+        obj.device = device
+
         return obj
 
     def _compute_traction(self, u):
