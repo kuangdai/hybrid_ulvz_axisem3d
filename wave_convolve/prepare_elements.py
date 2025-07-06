@@ -49,7 +49,7 @@ def build_fluid_element(node_indices, face_index, name):
         rho_n.append(rho)
 
     element = FluidElement(node_xyz, rho_n, gamma_face_index=face_index)
-    element.save_to(f"{save_dir}/{name}.pt")
+    element.save_to(f"{save_dir}/{medium}_elements/{name}.pt")
 
 
 if __name__ == "__main__":
