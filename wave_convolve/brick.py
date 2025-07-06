@@ -1,4 +1,5 @@
-import numpy as np
+import math
+
 import torch
 
 
@@ -82,7 +83,7 @@ def fft_convolve_multidim(a, b, sum_dim=True):
     L1, d = a.shape
     L2 = b.shape[0]
     N = L1 + L2 - 1  # 理论卷积长度
-    n_fft = 2 ** int(np.ceil(np.log2(N)))  # 2的幂次，保障FFT高效
+    n_fft = 2 ** int(math.ceil(math.log2(N)))  # 2的幂次，保障FFT高效
 
     # 执行FFT，使用forward确保严格能量一致性
     A = torch.fft.rfft(a, n=n_fft, dim=0, norm='forward')  # [fft_len, d]
@@ -140,7 +141,7 @@ def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
     point_prev = face_node_pos[gp_index - 1]
     vec1 = point_self - point_prev
     vec2 = point_next - point_self
-    normal = 0.5 * torch.cross(vec1, vec2)  # 四边形1/4面积法向
+    normal = 0.5 * torch.cross(vec1, vec2, dim=-1)  # 四边形1/4面积法向
 
     if not voigt_solid:
         return normal.unsqueeze(0)  # (1, 3)，Fluid模式直接返回矢量
@@ -194,7 +195,7 @@ face_dim_direction_dict = {
 }
 
 # 定义三维 8 个 Gauss 点位置
-sqrt3_inv = 1.0 / np.sqrt(3)
+sqrt3_inv = 1.0 / math.sqrt(3)
 gauss_1d = torch.tensor([-sqrt3_inv, sqrt3_inv])
 gauss_3d = torch.stack(torch.meshgrid(
     gauss_1d, gauss_1d, gauss_1d, indexing='ij'), dim=-1).reshape(-1, 3)
@@ -315,7 +316,8 @@ class SolidElement(Element):
         dim, pos = face_dim_direction_dict[self.gamma_face_index]
 
         # 面上节点坐标
-        node_pos = torch.tensor(node_pos, dtype=torch.float32)
+        if not isinstance(node_pos, torch.Tensor):
+            node_pos = torch.tensor(node_pos, dtype=torch.float32)
         node_pos_face = node_pos[face_node_idx]
 
         # 面上Gauss点坐标
@@ -375,7 +377,8 @@ class FluidElement(Element):
         dim, pos = face_dim_direction_dict[self.gamma_face_index]
 
         # 面上节点坐标
-        node_pos = torch.tensor(node_pos, dtype=torch.float32)
+        if not isinstance(node_pos, torch.Tensor):
+            node_pos = torch.tensor(node_pos, dtype=torch.float32)
         node_pos_face = node_pos[face_node_idx]
 
         # 面上Gauss点坐标
@@ -405,3 +408,61 @@ class FluidElement(Element):
         self.face_disp2stress = torch.stack(face_disp2stress, dim=0).to(self.device)
         self.face_stress2traction = torch.stack(face_stress2traction, dim=0).to(self.device)
         self.face_node2gauss = torch.stack(face_node2gauss, dim=0).to(self.device)
+
+
+def main():
+    """
+    生成一个标准立方体单元，随机两个场，分别使用 Solid 和 Fluid 单元计算卷积积分
+    """
+    torch.manual_seed(0)
+
+    # ------------------ 生成单元 ------------------
+    # 标准立方体节点坐标 [-1, 1] 空间
+    node_pos = torch.tensor([
+        [-1, -1, -1],
+        [1, -1, -1],
+        [1, 1, -1],
+        [-1, 1, -1],
+        [-1, -1, 1],
+        [1, -1, 1],
+        [1, 1, 1],
+        [-1, 1, 1]
+    ], dtype=torch.float32)
+
+    # 物性参数
+    lambda_g = torch.ones(8) * 2.0
+    mu_g = torch.ones(8) * 1.0
+    rho_g = torch.ones(8) * 1.0
+
+    gamma_face = 6  # 选择 z=+1 面
+
+    # Solid 单元
+    solid_elem = SolidElement(node_pos, lambda_g, mu_g, gamma_face_index=gamma_face, device="cpu")
+
+    # Fluid 单元
+    fluid_elem = FluidElement(node_pos, rho_g, gamma_face_index=gamma_face, device="cpu")
+
+    # ------------------ 生成两个随机场 ------------------
+    T_near = 100
+    T_recip = 80
+
+    # Solid：8节点3方向
+    u_near_solid = torch.randn(T_near, 8, 3)
+    u_recip_solid = torch.randn(T_recip, 8, 3)
+
+    # Fluid：8节点1方向
+    u_near_fluid = torch.randn(T_near, 8, 1)
+    u_recip_fluid = torch.randn(T_recip, 8, 1)
+
+    # ------------------ 计算卷积积分 ------------------
+    result_solid = solid_elem.compute_convolve(u_near_solid, u_recip_solid)  # [T_near + T_recip - 1]
+    result_fluid = fluid_elem.compute_convolve(u_near_fluid, u_recip_fluid)  # [T_near + T_recip - 1]
+
+    print("Solid 单元卷积结果长度:", result_solid.shape)
+    print("Fluid 单元卷积结果长度:", result_fluid.shape)
+    print("Solid 前5项:", result_solid[:5])
+    print("Fluid 前5项:", result_fluid[:5])
+
+
+if __name__ == "__main__":
+    main()
