@@ -138,13 +138,15 @@ if __name__ == "__main__":
 
     # Unique points
     idx_unique = []
+    idx_seen = set()
     for connect in connectivity:
         for point in connect:
             t, p, d = point
-            if (t, p, d) not in idx_unique:
-                idx_unique.append((t, p, d))
+            key = (t, p, d)
+            if key not in idx_seen:
+                idx_unique.append(key)
+                idx_seen.add(key)
     idx_unique = np.array(idx_unique)
-    print(f'✅ Unique节点数: {len(idx_unique)}')
 
     # 构造 GeoPoints
     r_vals = R_earth - depths[idx_unique[:, 2]]
