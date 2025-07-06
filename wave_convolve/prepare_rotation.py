@@ -5,9 +5,10 @@ import numpy as np
 
 def compute_rtz_to_xyz_matrix(theta, phi):
     """
-    单节点 RTZ → XYZ 旋转矩阵
-    输入：theta, phi 单位 rad
-    返回：3x3 矩阵
+    RTZ 分量 → XYZ 坐标
+    - 输入：theta, phi (rad)，theta 极角，phi 方位角
+    - RTZ = [theta方向分量, phi方向分量, r方向分量]
+    - 输出：3x3 矩阵 R，满足 vec_xyz = R @ vec_rtz
     """
     sin_th = np.sin(theta)
     cos_th = np.cos(theta)
@@ -15,9 +16,9 @@ def compute_rtz_to_xyz_matrix(theta, phi):
     cos_ph = np.cos(phi)
 
     R = np.array([
-        [sin_th * cos_ph, cos_th * cos_ph, -sin_ph],
-        [sin_th * sin_ph, cos_th * sin_ph, cos_ph],
-        [cos_th, -sin_th, 0.0]
+        [cos_th * cos_ph, -sin_ph, sin_th * cos_ph],
+        [cos_th * sin_ph,  cos_ph, sin_th * sin_ph],
+        [-sin_th,           0.0,    cos_th]
     ])
     return R
 
