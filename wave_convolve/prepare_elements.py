@@ -84,9 +84,11 @@ if __name__ == "__main__":
     if medium == "solid":
         inner = 1
         outer = 0
-    else:
+    elif medium == "fluid":
         inner = Nd - 2
         outer = Nd - 1
+    else:
+        assert 0, "Invalid medium"
     for ip in range(Np):
         for it in range(Nt - 1):
             ip_next = (ip + 1) % Np
@@ -110,9 +112,11 @@ if __name__ == "__main__":
     if medium == "solid":
         lower = 1
         upper = Nd - 1
-    else:
+    elif medium == "fluid":
         lower = 0
         upper = Nd - 2
+    else:
+        assert 0, "Invalid medium"
     for ip in range(Np):
         for id_ in range(lower, upper):
             ip_next = (ip + 1) % Np
