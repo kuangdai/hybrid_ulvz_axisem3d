@@ -279,11 +279,45 @@ class SolidElement:
         return disp
 
     def compute_convolve(self, u_near, u_recip):
-        t_near = self._compute_traction(u_near).reshape(-1, 12)  # [tn, 4 * 3]
-        ug_near = self._compute_disp_gauss(u_near).reshape(-1, 12)  # [tn, 4 * 3]
-        t_recip = self._compute_traction(u_recip).reshape(-1, 12)  # [tr, 4 * 3]
-        ug_recip = self._compute_disp_gauss(u_recip).reshape(-1, 12)  # [tr, 4 * 3]
-        first = fft_convolve_multidim(t_near, ug_recip)
-        second = fft_convolve_multidim(ug_near, t_recip)
-        convolved = first - second
+        """
+        计算面上双场卷积积分，返回理论表达式中的最终结果：
+
+            s(t) = ∑_g ∑_i ( t_i^near ∗ u_i^recip - u_i^near ∗ t_i^recip )
+
+        其中：
+        - ∗ 表示时间卷积
+        - g 表示面上高斯点编号（共4个）
+        - i 表示方向（3个方向）
+        - u_near, t_near：近场位移、牵引力
+        - u_recip, t_recip：互反场位移、牵引力
+
+        参数：
+            u_near : [time, 8, 3]
+                近场单元8节点、3方向的多时刻位移
+            u_recip : [time, 8, 3]
+                互反场单元8节点、3方向的多时刻位移
+
+        返回：
+            convolved : [total_time]
+                面上积分、方向累加后的最终卷积结果
+        """
+
+        # Step 1：计算面上牵引力，拉平为 [time, 12]，即 4 Gauss点 × 3方向
+        t_near = self._compute_traction(u_near).reshape(-1, 12)
+        t_recip = self._compute_traction(u_recip).reshape(-1, 12)
+
+        # Step 2：计算面上Gauss点位移，拉平为 [time, 12]
+        ug_near = self._compute_disp_gauss(u_near).reshape(-1, 12)
+        ug_recip = self._compute_disp_gauss(u_recip).reshape(-1, 12)
+
+        # Step 3：时间卷积
+        # t_near ∗ u_recip：近场牵引力与互反场位移卷积
+        first = fft_convolve_multidim(t_near, ug_recip, sum_dim=True)
+
+        # u_near ∗ t_recip：近场位移与互反场牵引力卷积
+        second = fft_convolve_multidim(ug_near, t_recip, sum_dim=True)
+
+        # Step 4：计算最终贡献，两个方向相减
+        convolved = first - second  # [total_time]
+
         return convolved
