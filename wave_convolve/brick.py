@@ -97,7 +97,7 @@ def fft_convolve_multidim(a, b, sum_dim=True):
     return result
 
 
-def _compute_stress2traction(face_node_pos, gp_index):
+def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
     """
     计算给定面上第gp_index个高斯点的单位法向及对应的应力-牵引力投影矩阵P
 
@@ -124,6 +124,9 @@ def _compute_stress2traction(face_node_pos, gp_index):
     # cross结果为平行四边形面积，乘0.5对应四边形的四分之一，可直接用于积分权重
     normal = 0.5 * torch.cross(vec1, vec2)
 
+    if not voigt_solid:
+        return normal.unsqueeze(0)  # (1, 3)
+
     # 构造 P矩阵： σ → t 转换，以满足Voigt格式
     n0, n1, n2 = normal[0], normal[1], normal[2]
     P = torch.zeros((3, 6), dtype=torch.float32)
@@ -146,7 +149,135 @@ def _compute_stress2traction(face_node_pos, gp_index):
     return P
 
 
-class SolidElement:
+# 节点编号示意：
+#   7 -------- 6
+#  /|         /|
+# 4 -------- 5 |
+# | |        | |
+# | 3 -------| 2
+# |/         |/
+# 0 -------- 1
+face_node_dict = {
+    1: [0, 4, 7, 3],  # x = -1
+    2: [1, 2, 6, 5],  # x = +1
+    3: [0, 1, 5, 4],  # y = -1
+    4: [2, 3, 7, 6],  # y = +1
+    5: [0, 3, 2, 1],  # z = -1
+    6: [4, 5, 6, 7]  # z = +1
+}
+
+face_dim_direction_dict = {
+    1: [0, -1],  # [dim, face position]
+    2: [0, 1],
+    3: [1, -1],
+    4: [1, 1],
+    5: [2, -1],
+    6: [2, 1],
+}
+
+
+# 定义三维 8 个 Gauss 点位置
+sqrt3_inv = 1.0 / np.sqrt(3)
+gauss_1d = torch.tensor([-sqrt3_inv, sqrt3_inv])
+gauss_3d = torch.stack(torch.meshgrid(
+    gauss_1d, gauss_1d, gauss_1d, indexing='ij'), dim=-1).reshape(-1, 3)
+
+
+#######################################
+#######################################
+#######################################
+
+
+class Element:
+    def __init__(self, gamma_face_index, device="cpu"):
+        self.gamma_face_index = gamma_face_index
+        self.device = device
+        self.face_disp2stress = None
+        self.face_stress2traction = None
+        self.face_node2gauss = None
+
+    def _compute_traction(self, u):
+        """
+        计算面上牵引力
+        :param u: [time, 8, 3]  时间、节点、方向
+        :return: traction [time, 4, 3]  时间、节点、方向
+        """
+        u = u.to(self.device)  # u: [time, 8, 3]
+        u = u.reshape(u.shape[0], -1)  # u: [time, 24]
+
+        # face_disp2stress: [4, 6, 24]
+        # u: [time, 24]
+        # stress: [time, 4, 6]
+        stress = torch.einsum('gsn, tn -> tgs', self.face_disp2stress, u)
+
+        # face_stress2traction: [4, 3, 6]
+        # stress: [time, 4, 6]
+        # traction: [time, 4, 3]
+        traction = torch.einsum('gcs, tgs -> tgc', self.face_stress2traction, stress)
+
+        return traction
+
+    def _compute_disp_gauss(self, u):
+        """
+        计算面上高斯点的位移
+        :param u: [time, 8, 3]  时间、节点、方向
+        :return: disp [time, 4, 3]  时间、Gauss点、方向
+        """
+        u = u.to(self.device)  # u: [time, 8, 3]
+
+        # face_node2gauss: [4, 8]
+        # u: [time, 8, 3]
+        # disp: [time, 4, 3]
+        disp = torch.einsum('gn, tnc -> tgc', self.face_node2gauss, u)
+
+        return disp
+
+    def compute_convolve(self, u_near, u_recip):
+        """
+        计算面上双场卷积积分，返回理论表达式中的最终结果：
+
+            s(t) = ∑_g ∑_i ( t_i^near ∗ u_i^recip - u_i^near ∗ t_i^recip )
+
+        其中：
+        - ∗ 表示时间卷积
+        - g 表示面上高斯点编号（共4个）
+        - i 表示方向（3个方向）
+        - u_near, t_near：近场位移、牵引力
+        - u_recip, t_recip：互反场位移、牵引力
+
+        参数：
+            u_near : [time, 8, 3]
+                近场单元8节点、3方向的多时刻位移
+            u_recip : [time, 8, 3]
+                互反场单元8节点、3方向的多时刻位移
+
+        返回：
+            convolved : [total_time]
+                面上积分、方向累加后的最终卷积结果
+        """
+
+        # Step 1：计算面上牵引力，拉平为 [time, 12]，即 4 Gauss点 × 3方向
+        t_near = self._compute_traction(u_near).reshape(u_near.shape[0], -1)
+        t_recip = self._compute_traction(u_recip).reshape(u_recip.shape[0], -1)
+
+        # Step 2：计算面上Gauss点位移，拉平为 [time, 12]
+        ug_near = self._compute_disp_gauss(u_near).reshape(u_near.shape[0], -1)
+        ug_recip = self._compute_disp_gauss(u_recip).reshape(u_recip.shape[0], -1)
+
+        # Step 3：时间卷积
+        # t_near ∗ u_recip：近场牵引力与互反场位移卷积
+        first = fft_convolve_multidim(t_near, ug_recip, sum_dim=True)
+
+        # u_near ∗ t_recip：近场位移与互反场牵引力卷积
+        second = fft_convolve_multidim(ug_near, t_recip, sum_dim=True)
+
+        # Step 4：计算最终贡献，两个方向相减
+        convolved = first - second  # [total_time]
+
+        return convolved
+
+
+class SolidElement(Element):
     def __init__(self, node_pos, lambda_g, mu_g, gamma_face_index, device="cpu"):
         """
         初始化SolidElement
@@ -155,50 +286,14 @@ class SolidElement:
         :param mu_g: (8,) 剪切模量 μ
         :param gamma_face_index: 1~6 指定面编号
         """
-        self.gamma_face_index = gamma_face_index
-        self.device = device
-        self.face_disp2stress = None  # [4, 6, 24]
-        self.face_stress2traction = None  # [4, 3, 6]
-        self.face_node2gauss = None  # [4, 8]
+        super().__init__(gamma_face_index, device)
         self._precompute(node_pos, lambda_g, mu_g)
 
     def _precompute(self, node_pos, lambda_g, mu_g):
         """
         预计算面上所有矩阵
         """
-        # 定义三维 8 个 Gauss 点位置
-        sqrt3_inv = 1.0 / np.sqrt(3)
-        gauss_1d = torch.tensor([-sqrt3_inv, sqrt3_inv])
-        gauss_3d = torch.stack(torch.meshgrid(
-            gauss_1d, gauss_1d, gauss_1d, indexing='ij'), dim=-1).reshape(-1, 3)
-
         # 定义面
-
-        # 节点编号示意：
-        #   7 -------- 6
-        #  /|         /|
-        # 4 -------- 5 |
-        # | |        | |
-        # | 3 -------| 2
-        # |/         |/
-        # 0 -------- 1
-        face_node_dict = {
-            1: [0, 4, 7, 3],  # x = -1
-            2: [1, 2, 6, 5],  # x = +1
-            3: [0, 1, 5, 4],  # y = -1
-            4: [2, 3, 7, 6],  # y = +1
-            5: [0, 3, 2, 1],  # z = -1
-            6: [4, 5, 6, 7]  # z = +1
-        }
-        face_dim_direction_dict = {
-            1: [0, -1],  # [dim, face position]
-            2: [0, 1],
-            3: [1, -1],
-            4: [1, 1],
-            5: [2, -1],
-            6: [2, 1],
-        }
-
         face_node_idx = face_node_dict[self.gamma_face_index]
         dim, pos = face_dim_direction_dict[self.gamma_face_index]
 
@@ -236,88 +331,60 @@ class SolidElement:
             face_disp2stress.append(D @ B)
 
             # 应力->牵引力矩阵
-            face_stress2traction.append(_compute_stress2traction(node_pos_face, gp))
+            face_stress2traction.append(_compute_stress2traction(node_pos_face, gp, True))
 
         self.face_disp2stress = torch.stack(face_disp2stress, dim=0).to(self.device)
         self.face_stress2traction = torch.stack(face_stress2traction, dim=0).to(self.device)
         self.face_node2gauss = torch.stack(face_node2gauss, dim=0).to(self.device)
 
-    def _compute_traction(self, u):
+
+class FluidElement(Element):
+    def __init__(self, node_pos, rho_g, gamma_face_index, device="cpu"):
         """
-        计算面上牵引力
-        :param u: [time, 8, 3]  多时刻、节点、方向的位移
-        :return: traction [4, 3, time]  Gauss点、方向、时间
+        初始化FluidElement
+        :param node_pos: (8, 3) 节点坐标
+        :param rho_g: (8,) 密度 ρ
+        :param gamma_face_index: 1~6 指定面编号
         """
-        u = u.to(self.device)  # u: [time, 8, 3]
-        u = u.reshape(u.shape[0], 24)  # u: [time, 24]
+        super().__init__(gamma_face_index, device)
+        self._precompute(node_pos, rho_g)
 
-        # face_disp2stress: [4, 6, 24]
-        # u: [time, 24]
-        # stress: [time, 4, 6]
-        stress = torch.einsum('gsn, tn -> tgs', self.face_disp2stress, u)
-
-        # face_stress2traction: [4, 3, 6]
-        # stress: [time, 4, 6]
-        # traction: [time, 4, 3]
-        traction = torch.einsum('gcs, tgs -> tgc', self.face_stress2traction, stress)
-
-        return traction
-
-    def _compute_disp_gauss(self, u):
+    def _precompute(self, node_pos, rho_g):
         """
-        计算面上高斯点的位移
-        :param u: [time, 8, 3]  多时刻、节点、方向的位移
-        :return: disp [time, 4, 3]  时间、Gauss点、方向
+        预计算面上所有矩阵
         """
-        u = u.to(self.device)  # u: [time, 8, 3]
+        # 定义面
+        face_node_idx = face_node_dict[self.gamma_face_index]
+        dim, pos = face_dim_direction_dict[self.gamma_face_index]
 
-        # face_node2gauss: [4, 8]
-        # u: [time, 8, 3]
-        # disp: [time, 4, 3]
-        disp = torch.einsum('gn, tnc -> tgc', self.face_node2gauss, u)
+        # 面上节点坐标
+        node_pos = torch.tensor(node_pos, dtype=torch.float32)
+        node_pos_face = node_pos[face_node_idx]
 
-        return disp
+        # 面上Gauss点坐标
+        gauss_pos_face = gauss_3d[face_node_idx]  # 快速从三维获取
+        gauss_pos_face[:, dim] = pos  # 将三维投影到面上
 
-    def compute_convolve(self, u_near, u_recip):
-        """
-        计算面上双场卷积积分，返回理论表达式中的最终结果：
+        # 对Gauss点循环
+        face_disp2stress, face_stress2traction, face_node2gauss = [], [], []
+        for gp in range(4):
+            # 形函数，将节点位移map到面上Gauss点位移
+            xi, eta, zeta = gauss_pos_face[gp]
+            N = _shape_function(xi, eta, zeta)
+            face_node2gauss.append(N)
 
-            s(t) = ∑_g ∑_i ( t_i^near ∗ u_i^recip - u_i^near ∗ t_i^recip )
+            # 势函数->位移矩阵
+            dN_dxi = _shape_function_derivatives(xi, eta, zeta)
+            J = dN_dxi.T @ node_pos
+            invJ = torch.inverse(J)
+            dN_dx = dN_dxi @ invJ.T
 
-        其中：
-        - ∗ 表示时间卷积
-        - g 表示面上高斯点编号（共4个）
-        - i 表示方向（3个方向）
-        - u_near, t_near：近场位移、牵引力
-        - u_recip, t_recip：互反场位移、牵引力
+            # 势函数->应力矩阵
+            face_disp2stress.append(dN_dx.T / rho_g[gp])
 
-        参数：
-            u_near : [time, 8, 3]
-                近场单元8节点、3方向的多时刻位移
-            u_recip : [time, 8, 3]
-                互反场单元8节点、3方向的多时刻位移
+            # 应力->牵引力矩阵
+            face_stress2traction.append(_compute_stress2traction(node_pos_face, gp, False))
 
-        返回：
-            convolved : [total_time]
-                面上积分、方向累加后的最终卷积结果
-        """
-
-        # Step 1：计算面上牵引力，拉平为 [time, 12]，即 4 Gauss点 × 3方向
-        t_near = self._compute_traction(u_near).reshape(-1, 12)
-        t_recip = self._compute_traction(u_recip).reshape(-1, 12)
-
-        # Step 2：计算面上Gauss点位移，拉平为 [time, 12]
-        ug_near = self._compute_disp_gauss(u_near).reshape(-1, 12)
-        ug_recip = self._compute_disp_gauss(u_recip).reshape(-1, 12)
-
-        # Step 3：时间卷积
-        # t_near ∗ u_recip：近场牵引力与互反场位移卷积
-        first = fft_convolve_multidim(t_near, ug_recip, sum_dim=True)
-
-        # u_near ∗ t_recip：近场位移与互反场牵引力卷积
-        second = fft_convolve_multidim(ug_near, t_recip, sum_dim=True)
-
-        # Step 4：计算最终贡献，两个方向相减
-        convolved = first - second  # [total_time]
-
-        return convolved
+        self.face_disp2stress = torch.stack(face_disp2stress, dim=0).to(self.device)
+        self.face_stress2traction = torch.stack(face_stress2traction, dim=0).to(self.device)
+        self.face_node2gauss = torch.stack(face_node2gauss, dim=0).to(self.device)
