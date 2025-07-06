@@ -156,11 +156,11 @@ def fft_convolve_multidim(a, b, sum_dim=True):
     n_fft = 2 ** int(math.ceil(math.log2(N)))  # 2的幂次，保障FFT高效
 
     # 执行FFT，使用forward确保严格能量一致性
-    A = torch.fft.rfft(a, n=n_fft, dim=0, norm='forward')  # [fft_len, d]
-    B = torch.fft.rfft(b, n=n_fft, dim=0, norm='forward')
+    A = torch.fft.rfft(a, n=n_fft, dim=0)  # [fft_len, d]
+    B = torch.fft.rfft(b, n=n_fft, dim=0)
     C = A * B  # 逐通道频域乘积
 
-    result = torch.fft.irfft(C, n=n_fft, dim=0, norm='forward')[:N]  # [N, d]
+    result = torch.fft.irfft(C, n=n_fft, dim=0)[:N]  # [N, d]
 
     if sum_dim:
         result = torch.sum(result, dim=1)  # 所有通道累加，返回 [N]
