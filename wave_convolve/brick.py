@@ -99,52 +99,70 @@ def fft_convolve_multidim(a, b, sum_dim=True):
 
 def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
     """
-    计算给定面上第gp_index个高斯点的单位法向及对应的应力-牵引力投影矩阵P
+    计算面上第 gp_index 个高斯点的面积法向与应力-牵引力投影矩阵（或法向量）
 
-    P 矩阵作用：Voigt格式下应力映射至牵引力 t_i = σ_ij * n_j
-    Voigt编码顺序：
-        0 → σ_xx
-        1 → σ_yy
-        2 → σ_zz
-        3 → σ_yz = σ_zy
-        4 → σ_xz = σ_zx
-        5 → σ_xy = σ_yx
+    适配两种模式：
+    1. Solid（voigt_solid=True）:
+        - 返回 [3, 6] 投影矩阵 P
+        - 满足 Voigt 格式下：t_i = σ_ij * n_j
+        - Voigt编码顺序：
+            0 → σ_xx
+            1 → σ_yy
+            2 → σ_zz
+            3 → σ_yz = σ_zy
+            4 → σ_xz = σ_zx
+            5 → σ_xy = σ_yx
 
-    :param face_node_pos: (4, 3) 面上四个节点物理坐标
-    :param gp_index: int，高斯点编号 0~3
-    :return: (3, 6) 投影矩阵 P
+    2. Fluid（voigt_solid=False）:
+        - 返回 [1, 3] 面法向（已包含面积权重）
+        - 用于 t = n ⋅ ∇χ / ρ，其中 t、n、∇χ均为矢量
+
+    注意：
+    - 输出的 normal 已包含1/4面面积系数（四边形总面积/4），便于Gauss积分直接累加
+    - 正确法向方向由单元节点逆时针排序确定，面外侧为正方向
+
+    参数：
+        face_node_pos : (4, 3)
+            面上4个节点的三维物理坐标
+        gp_index : int
+            Gauss点编号，取值 0 ~ 3
+        voigt_solid : bool
+            Solid模式返回 [3, 6] 投影矩阵，Fluid模式返回 [1, 3] 法向
+
+    返回：
+        torch.Tensor
+            - Solid模式： [3, 6] 投影矩阵 P
+            - Fluid模式： [1, 3] 面法向，含面积权重
     """
-    # 计算单位法向
+    # 计算面积法向（含系数 1/4）
     point_self = face_node_pos[gp_index]
     point_next = face_node_pos[(gp_index + 1) % 4]
     point_prev = face_node_pos[gp_index - 1]
     vec1 = point_self - point_prev
     vec2 = point_next - point_self
-    # 计算面单元当前高斯点贡献的带面积法向
-    # cross结果为平行四边形面积，乘0.5对应四边形的四分之一，可直接用于积分权重
-    normal = 0.5 * torch.cross(vec1, vec2)
+    normal = 0.5 * torch.cross(vec1, vec2)  # 四边形1/4面积法向
 
     if not voigt_solid:
-        return normal.unsqueeze(0)  # (1, 3)
+        return normal.unsqueeze(0)  # (1, 3)，Fluid模式直接返回矢量
 
-    # 构造 P矩阵： σ → t 转换，以满足Voigt格式
+    # Solid模式：构造Voigt投影矩阵
     n0, n1, n2 = normal[0], normal[1], normal[2]
     P = torch.zeros((3, 6), dtype=torch.float32)
 
     # t_x = σ_xx * n_x + σ_xy * n_y + σ_xz * n_z
-    P[0, 0] = n0  # σ_xx n_x
-    P[0, 5] = n1  # σ_xy n_y
-    P[0, 4] = n2  # σ_xz n_z
+    P[0, 0] = n0
+    P[0, 5] = n1
+    P[0, 4] = n2
 
     # t_y = σ_yx * n_x + σ_yy * n_y + σ_yz * n_z
-    P[1, 5] = n0  # σ_xy n_x
-    P[1, 1] = n1  # σ_yy n_y
-    P[1, 3] = n2  # σ_yz n_z
+    P[1, 5] = n0
+    P[1, 1] = n1
+    P[1, 3] = n2
 
     # t_z = σ_zx * n_x + σ_zy * n_y + σ_zz * n_z
-    P[2, 4] = n0  # σ_xz n_x
-    P[2, 3] = n1  # σ_yz n_y
-    P[2, 2] = n2  # σ_zz n_z
+    P[2, 4] = n0
+    P[2, 3] = n1
+    P[2, 2] = n2
 
     return P
 
@@ -174,7 +192,6 @@ face_dim_direction_dict = {
     5: [2, -1],
     6: [2, 1],
 }
-
 
 # 定义三维 8 个 Gauss 点位置
 sqrt3_inv = 1.0 / np.sqrt(3)
