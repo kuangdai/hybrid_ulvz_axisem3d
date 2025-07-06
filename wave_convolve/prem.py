@@ -17,12 +17,15 @@ class PREM:
         radius_km = data[:, 0]  # 单位 km
         self.radius = radius_km * 1000  # 单位 m
 
-        self.vp = data[:, 3] * 1000  # m/s
-        self.vs = data[:, 4] * 1000  # m/s
-        self.rho = data[:, 2] * 1000  # kg/m³
+        vpv = data[:, 3] * 1000  # m/s
+        vph = data[:, 4] * 1000  # m/s
+        self.vp = np.sqrt(vpv * vph)
 
-    CMB_RADIUS = 3480000.0  # m
-    EPSILON = 0.01  # m
+        vsv = data[:, 5] * 1000  # m/s
+        vsh = data[:, 6] * 1000  # m/s
+        self.vs = np.sqrt(vsv * vsh)
+
+        self.rho = data[:, 2] * 1000  # kg/m³
 
     def query_solid(self, r_m):
         """
@@ -48,5 +51,5 @@ class PREM:
             r_m -= EPSILON
         vp = np.interp(r_m, self.radius, self.vp)
         rho = np.interp(r_m, self.radius, self.rho)
-        kappa = vp ** 2 / rho
+        kappa = rho * vp ** 2
         return kappa, rho
