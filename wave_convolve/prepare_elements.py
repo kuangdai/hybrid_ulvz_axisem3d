@@ -54,6 +54,7 @@ def build_fluid_element(node_indices, face_index, name):
 
 if __name__ == "__main__":
     medium = sys.argv[1]
+    build_element = build_solid_element if medium == "solid" else build_fluid_element
 
     # 路径设置
     grid_path = '../wave_extrapolation/outputs'
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                 (it, ip_next, outer),
                 (it + 1, ip_next, outer)
             ]
-            build_solid_element(indices, 6, f"{medium}_{len(connectivity)}")
+            build_element(indices, 6, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
 
     print(f'✅ 最外层depth层单元共 {Np} × {Nt - 1} 个完成')
@@ -131,7 +132,7 @@ if __name__ == "__main__":
                 (Nt - 2, ip_next, id_ + 1),
                 (Nt - 1, ip_next, id_ + 1)
             ]
-            build_fluid_element(indices, 2, f"{medium}_{len(connectivity)}")
+            build_element(indices, 2, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
 
     print(f'✅ 最大theta层单元共 {Np} × {Nd - 2} 个完成')
