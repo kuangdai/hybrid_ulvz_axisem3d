@@ -67,37 +67,6 @@ def _build_B_matrix(dN_dx):
     return B
 
 
-def fft_convolve_multidim(a, b, sum_dim=True):
-    """
-    多通道一维卷积，支持 [time, d] 结构，d为通道数，自动零填充至2的次幂长度，提升FFT性能
-
-    参数：
-        a: [L1, d]  时间、通道，代表 force 或 displacement
-        b: [L2, d]  时间、通道，代表 reciprocal green
-
-    返回：
-        result:
-            若 sum_dim=True : [L1 + L2 - 1]，所有通道卷积并求和
-            若 sum_dim=False: [L1 + L2 - 1, d]，各通道独立卷积
-    """
-    L1, d = a.shape
-    L2 = b.shape[0]
-    N = L1 + L2 - 1  # 理论卷积长度
-    n_fft = 2 ** int(math.ceil(math.log2(N)))  # 2的幂次，保障FFT高效
-
-    # 执行FFT，使用forward确保严格能量一致性
-    A = torch.fft.rfft(a, n=n_fft, dim=0, norm='forward')  # [fft_len, d]
-    B = torch.fft.rfft(b, n=n_fft, dim=0, norm='forward')
-    C = A * B  # 逐通道频域乘积
-
-    result = torch.fft.irfft(C, n=n_fft, dim=0, norm='forward')[:N]  # [N, d]
-
-    if sum_dim:
-        result = torch.sum(result, dim=1)  # 所有通道累加，返回 [N]
-
-    return result
-
-
 def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
     """
     计算面上第 gp_index 个高斯点的面积法向与应力-牵引力投影矩阵（或法向量）
@@ -166,6 +135,37 @@ def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
     P[2, 2] = n2
 
     return P
+
+
+def fft_convolve_multidim(a, b, sum_dim=True):
+    """
+    多通道一维卷积，支持 [time, d] 结构，d为通道数，自动零填充至2的次幂长度，提升FFT性能
+
+    参数：
+        a: [L1, d]  时间、通道，代表 force 或 displacement
+        b: [L2, d]  时间、通道，代表 reciprocal green
+
+    返回：
+        result:
+            若 sum_dim=True : [L1 + L2 - 1]，所有通道卷积并求和
+            若 sum_dim=False: [L1 + L2 - 1, d]，各通道独立卷积
+    """
+    L1, d = a.shape
+    L2 = b.shape[0]
+    N = L1 + L2 - 1  # 理论卷积长度
+    n_fft = 2 ** int(math.ceil(math.log2(N)))  # 2的幂次，保障FFT高效
+
+    # 执行FFT，使用forward确保严格能量一致性
+    A = torch.fft.rfft(a, n=n_fft, dim=0, norm='forward')  # [fft_len, d]
+    B = torch.fft.rfft(b, n=n_fft, dim=0, norm='forward')
+    C = A * B  # 逐通道频域乘积
+
+    result = torch.fft.irfft(C, n=n_fft, dim=0, norm='forward')[:N]  # [N, d]
+
+    if sum_dim:
+        result = torch.sum(result, dim=1)  # 所有通道累加，返回 [N]
+
+    return result
 
 
 # 节点编号示意：
