@@ -31,9 +31,8 @@ def main():
     # 读取网格
     phi = np.loadtxt(f'{grid_path}/grid_azim_ml_ready.txt')  # (Np,)
     theta = np.loadtxt(f'{grid_path}/grid_dist_ml_ready.txt')  # (Nt,)
-
-    Np = phi.shape[0]
     Nt = theta.shape[0]
+    Np = phi.shape[0]
 
     print(f'Grid: theta={Nt}, phi={Np}')
 
