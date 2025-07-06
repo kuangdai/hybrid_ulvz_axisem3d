@@ -85,11 +85,17 @@ if __name__ == "__main__":
                         "__LENGTH__": args.length,
                     })
 
+    sample_interval = args_input["time_series"]["sample_interval"]
+    replace_in_file(f"{out_dir}/inparam.output.yaml",
+                    {
+                        "__SAMPLE_INTERVAL__": sample_interval,
+                    })
+
     # Prepare stations
-    replace_in_file("../wave_convolve/surface_nodes_cache/reciprocal_stations_solid.txt",
+    replace_in_file("../wave_convolve/element_cache/reciprocal_stations_solid.txt",
                     replace_dict={},
                     dest=f"{out_dir}/reciprocal_stations_solid.txt")
-    replace_in_file("../wave_convolve/surface_nodes_cache/reciprocal_stations_fluid.txt",
+    replace_in_file("../wave_convolve/element_cache/reciprocal_stations_fluid.txt",
                     replace_dict={},
                     dest=f"{out_dir}/reciprocal_stations_fluid.txt")
 

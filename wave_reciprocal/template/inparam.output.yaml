@@ -111,7 +111,7 @@ list_of_station_groups:
             # only: DT / DTx2 / DTx3 / ... / value
             # note: DT stands for Δt of the simulation; DTx3 means
             #       sampling period = Δt * 3
-            sampling_period: DT
+            sampling_period: DTx__SAMPLE_INTERVAL__
             # what: time window
             # type: string / array of double
             # only: FULL / [t0, t1]
@@ -235,7 +235,7 @@ list_of_station_groups:
               # only: DT / DTx2 / DTx3 / ... / value
               # note: DT stands for Δt of the simulation; DTx3 means
               #       sampling period = Δt * 3
-              sampling_period: DT
+              sampling_period: DTx__SAMPLE_INTERVAL__
               # what: time window
               # type: string / array of double
               # only: FULL / [t0, t1]
