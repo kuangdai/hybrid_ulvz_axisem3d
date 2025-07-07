@@ -112,16 +112,8 @@ if __name__ == "__main__":
     print(f'✅ 最外层depth层单元共 {Np} × {Nt - 1} 个完成')
 
     ### 2. 最大 theta 层单元 ###
-    if medium == "solid":
-        lower_bound = 1
-        upper_bound = Nd - 1
-    elif medium == "fluid":
-        lower_bound = 0
-        upper_bound = Nd - 2
-    else:
-        assert 0, "Invalid medium"
     for ip in range(Np):
-        for id_ in range(lower_bound, upper_bound):
+        for id_ in range(0, Nd - 1):
             ip_next = (ip + 1) % Np
 
             indices = [
