@@ -83,11 +83,13 @@ if __name__ == "__main__":
 
     ### 1. 最外层 depth 层单元 ###
     if medium == "solid":
-        inner = 1
-        outer = 0
+        deeper = 1
+        shallower = 0
+        face_depth = 6
     elif medium == "fluid":
-        inner = Nd - 2
-        outer = Nd - 1
+        deeper = Nd - 1
+        shallower = Nd - 2
+        face_depth = 5
     else:
         assert 0, "Invalid medium"
     for ip in range(Np):
@@ -95,42 +97,42 @@ if __name__ == "__main__":
             ip_next = (ip + 1) % Np
 
             indices = [
-                (it, ip, inner),
-                (it + 1, ip, inner),
-                (it + 1, ip_next, inner),
-                (it, ip_next, inner),
-                (it, ip, outer),
-                (it + 1, ip, outer),
-                (it + 1, ip_next, outer),
-                (it, ip_next, outer)
+                (it, ip, deeper),
+                (it + 1, ip, deeper),
+                (it + 1, ip_next, deeper),
+                (it, ip_next, deeper),
+                (it, ip, shallower),
+                (it + 1, ip, shallower),
+                (it + 1, ip_next, shallower),
+                (it, ip_next, shallower)
             ]
-            build_element(indices, 6, f"{medium}_{len(connectivity)}")
+            build_element(indices, face_depth, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
 
     print(f'✅ 最外层depth层单元共 {Np} × {Nt - 1} 个完成')
 
     ### 2. 最大 theta 层单元 ###
     if medium == "solid":
-        lower = 1
-        upper = Nd - 1
+        lower_bound = 1
+        upper_bound = Nd - 1
     elif medium == "fluid":
-        lower = 0
-        upper = Nd - 2
+        lower_bound = 0
+        upper_bound = Nd - 2
     else:
         assert 0, "Invalid medium"
     for ip in range(Np):
-        for id_ in range(lower, upper):
+        for id_ in range(lower_bound, upper_bound):
             ip_next = (ip + 1) % Np
 
             indices = [
-                (Nt - 2, ip, id_),
-                (Nt - 1, ip, id_),
-                (Nt - 1, ip_next, id_),
-                (Nt - 2, ip_next, id_),
                 (Nt - 2, ip, id_ + 1),
                 (Nt - 1, ip, id_ + 1),
                 (Nt - 1, ip_next, id_ + 1),
-                (Nt - 2, ip_next, id_ + 1)
+                (Nt - 2, ip_next, id_ + 1),
+                (Nt - 2, ip, id_),
+                (Nt - 1, ip, id_),
+                (Nt - 1, ip_next, id_),
+                (Nt - 2, ip_next, id_)
             ]
             build_element(indices, 2, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
