@@ -56,14 +56,14 @@ def _build_B_matrix(dN_dx):
         B[2, idx + 2] = dNzi  # ∂u_z / ∂z
 
         # 对称剪切分量
-        B[3, idx + 1] = 2 * dNzi  # ∂u_y / ∂z
-        B[3, idx + 2] = 2 * dNyi  # ∂u_z / ∂y
+        B[3, idx + 1] = dNzi  # ∂u_y / ∂z
+        B[3, idx + 2] = dNyi  # ∂u_z / ∂y
 
-        B[4, idx] = 2 * dNzi  # ∂u_x / ∂z
-        B[4, idx + 2] = 2 * dNxi  # ∂u_z / ∂x
+        B[4, idx] = dNzi  # ∂u_x / ∂z
+        B[4, idx + 2] = dNxi  # ∂u_z / ∂x
 
-        B[5, idx] = 2 * dNyi  # ∂u_x / ∂y
-        B[5, idx + 1] = 2 * dNxi  # ∂u_y / ∂x
+        B[5, idx] = dNyi  # ∂u_x / ∂y
+        B[5, idx + 1] = dNxi  # ∂u_y / ∂x
     return B
 
 
