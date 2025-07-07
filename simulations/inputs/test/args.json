@@ -54,7 +54,7 @@
   },
   "time_series": {
     "dt": 0.2,
-    "length": 1000.0,
+    "length": 2000.0,
     "sample_interval": 5,
     "half_duration_stf": 20.0,
     "truncate_incident": true,
