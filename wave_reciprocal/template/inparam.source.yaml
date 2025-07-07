@@ -139,7 +139,7 @@ list_of_sources:
             #       2) GAUSSIAN: Gaussian
             #       3) FIRST_DERIVATIVE: first derivative of Gaussian
             #       4) RICKER: second derivative of Gaussian
-            use_derivative_integral: GAUSSIAN
+            use_derivative_integral: RICKER
             # ------------------------ #
             # parameters for StreamSTF #
             # ------------------------ #
