@@ -30,6 +30,7 @@ def load_reciprocal(u_near, station_name, medium):
         full_data[:, :, t, p, d] = data[:, :, i]
     return torch.tensor(full_data, dtype=torch.float32, device=u_near.device)
 
+
 def gather_nodes(u, connectivity):
     """
     u: [T, C, D0, D1, D2]  张量场，T时刻，C通道，三维网格
@@ -58,4 +59,3 @@ def gather_nodes(u, connectivity):
     output = torch.gather(u_flat, -1, flat_idx.expand(N, T, C, 8))  # [N, T, C, 8]
     output = output.permute(0, 1, 3, 2)  # [N, T, 8, C]
     return output
-
