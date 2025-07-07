@@ -129,7 +129,7 @@ if __name__ == "__main__":
             build_element(indices, 2, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
 
-    print(f'✅ 最大theta层单元共 {Np} × {Nd - 2} 个完成')
+    print(f'✅ 最大theta层单元共 {Np} × {Nd - 1} 个完成')
 
     # 存储 Connectivity
     connectivity = np.array(connectivity)
