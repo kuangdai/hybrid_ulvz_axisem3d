@@ -279,7 +279,7 @@ class Element:
         """
         计算面上双场卷积积分，返回理论表达式中的最终结果：
 
-            s(t) = ∑_g ∑_i ( t_i^near ∗ u_i^recip - u_i^near ∗ t_i^recip )
+            s(t) = ∑_g ∑_i ( t_i^near * u_i^recip - t_i^recip * u_i^near )
 
         其中：
         - ∗ 表示时间卷积
