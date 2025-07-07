@@ -67,7 +67,7 @@ def _build_B_matrix(dN_dx):
     return B
 
 
-def _compute_stress2traction(face_node_pos, gp_index, voigt_solid):
+def compute_normal(face_node_pos, gp_index, voigt_solid):
     """
     计算面上第 gp_index 个高斯点的面积法向与应力-牵引力投影矩阵（或法向量）
 
@@ -377,7 +377,7 @@ class SolidElement(Element):
             D[0, 1] = D[0, 2] = D[1, 0] = D[1, 2] = D[2, 0] = D[2, 1] = lam
 
             # 应力->牵引力
-            F = _compute_stress2traction(node_pos_face, gp, voigt_solid=True)  # [3, 6]
+            F = compute_normal(node_pos_face, gp, voigt_solid=True)  # [3, 6]
 
             # 合并
             face_disp2traction.append(F @ D @ B)  # [3, 6, 24]
@@ -434,7 +434,7 @@ class FluidElement(Element):
             B = dN_dx.T  # [3, 8]
 
             # 位移梯度 -> 牵引力
-            F = _compute_stress2traction(node_pos_face, gp, voigt_solid=False)  # [1, 3]
+            F = compute_normal(node_pos_face, gp, voigt_solid=False)  # [1, 3]
 
             # 合并
             face_disp2traction.append(F @ (B / rho))  # [1, 8]
