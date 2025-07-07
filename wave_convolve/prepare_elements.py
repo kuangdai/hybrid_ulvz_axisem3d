@@ -97,12 +97,12 @@ if __name__ == "__main__":
             indices = [
                 (it, ip, inner),
                 (it + 1, ip, inner),
-                (it, ip_next, inner),
                 (it + 1, ip_next, inner),
+                (it, ip_next, inner),
                 (it, ip, outer),
                 (it + 1, ip, outer),
-                (it, ip_next, outer),
-                (it + 1, ip_next, outer)
+                (it + 1, ip_next, outer),
+                (it, ip_next, outer)
             ]
             build_element(indices, 6, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
@@ -125,12 +125,12 @@ if __name__ == "__main__":
             indices = [
                 (Nt - 2, ip, id_),
                 (Nt - 1, ip, id_),
-                (Nt - 2, ip_next, id_),
                 (Nt - 1, ip_next, id_),
+                (Nt - 2, ip_next, id_),
                 (Nt - 2, ip, id_ + 1),
                 (Nt - 1, ip, id_ + 1),
-                (Nt - 2, ip_next, id_ + 1),
-                (Nt - 1, ip_next, id_ + 1)
+                (Nt - 1, ip_next, id_ + 1),
+                (Nt - 2, ip_next, id_ + 1)
             ]
             build_element(indices, 2, f"{medium}_{len(connectivity)}")
             connectivity.append(indices)
