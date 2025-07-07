@@ -196,9 +196,8 @@ face_dim_direction_dict = {
 
 # 定义三维 8 个 Gauss 点位置
 sqrt3_inv = 1.0 / math.sqrt(3)
-gauss_1d = torch.tensor([-sqrt3_inv, sqrt3_inv])
-gauss_3d = torch.stack(torch.meshgrid(
-    gauss_1d, gauss_1d, gauss_1d, indexing='ij'), dim=-1).reshape(-1, 3)
+gauss_3d = torch.tensor([[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+                          [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]]) * sqrt3_inv
 
 
 #######################################
