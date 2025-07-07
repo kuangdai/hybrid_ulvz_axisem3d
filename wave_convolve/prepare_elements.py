@@ -56,13 +56,15 @@ if __name__ == "__main__":
 
     # 路径设置
     grid_path = '../wave_extrapolation/outputs'
-    prem_path = './prem_1s.csv'
     save_dir = "./precomputed"
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(save_dir + f"/{medium}_elements", exist_ok=True)
 
+    # 1D模型
     R_earth = 6371000.0  # 地球半径，单位 m
-    prem = PREM(prem_path)  # 1D模型
+    prem = PREM('./prem_1s_mantle.csv') if medium == "solid" else PREM('./prem_1s_core.csv')
+
+    # ULVZ 位置
     with open(f"{grid_path}/args.json", "r") as fs:
         meta = json.load(fs)
     ulvz_lat, ulvz_lon = meta["ulvz_lat"], meta["ulvz_lon"]
