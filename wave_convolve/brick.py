@@ -312,7 +312,7 @@ class Element:
         first = fft_convolve_multidim(t_near, ug_recip, sum_dim=True)
 
         # u_near ∗ t_recip：近场位移与互反场牵引力卷积
-        second = fft_convolve_multidim(ug_near, t_recip, sum_dim=True)
+        second = fft_convolve_multidim(t_recip, ug_near, sum_dim=True)
 
         # Step 4：计算最终贡献，两个方向相减
         convolved = first - second  # [total_time]
