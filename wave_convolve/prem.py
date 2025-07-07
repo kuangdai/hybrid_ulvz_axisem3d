@@ -27,6 +27,12 @@ class PREM:
 
         self.rho = data[:, 2] * 1000  # kg/m³
 
+        # 严格递增
+        self.radius = self.radius[::-1]
+        self.vp = self.vp[::-1]
+        self.vs = self.vs[::-1]
+        self.rho = self.rho[::-1]
+
     def query_solid(self, r_m):
         """
         输入：半径 r，单位 m
