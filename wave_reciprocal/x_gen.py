@@ -32,7 +32,7 @@ if __name__ == "__main__":
                         help="Station component to use.")
     parser.add_argument("--dt", type=float, default=None,
                         help="Time interval.")
-    parser.add_argument("--length", type=float, default=1000.,
+    parser.add_argument("--length", type=float, default=2000.,
                         help="Record length.")
     args = parser.parse_args()
 
@@ -92,10 +92,10 @@ if __name__ == "__main__":
                     })
 
     # Prepare stations
-    replace_in_file("../wave_convolve/element_cache/reciprocal_stations_solid.txt",
+    replace_in_file("../wave_convolve/precomputed/reciprocal_stations_solid.txt",
                     replace_dict={},
                     dest=f"{out_dir}/reciprocal_stations_solid.txt")
-    replace_in_file("../wave_convolve/element_cache/reciprocal_stations_fluid.txt",
+    replace_in_file("../wave_convolve/precomputed/reciprocal_stations_fluid.txt",
                     replace_dict={},
                     dest=f"{out_dir}/reciprocal_stations_fluid.txt")
 
@@ -109,5 +109,5 @@ if __name__ == "__main__":
 
 # Example
 """
-python xgen.py --run-name test --station-name US.ERP --station-lat 42.12 --station-lon 280.01 --component T
+python x_gen.py --run-name test --station-name US.ERP --station-lat 42.12 --station-lon 280.01 --component T
 """
