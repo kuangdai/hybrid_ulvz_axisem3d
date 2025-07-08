@@ -51,3 +51,8 @@ if __name__ == "__main__":
     # Save
     print("Saving...")
     np.savez(f"reciprocal_simulations/{args.station_name}/output/rotated_{args.medium}.npz", data)
+
+"""
+python x_rotate.py --station-name US.ERP --medium solid
+python x_rotate.py --station-name US.ERP --medium fluid
+"""
