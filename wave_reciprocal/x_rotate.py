@@ -42,7 +42,7 @@ if __name__ == "__main__":
     points = GeoPoints(np.array([lat, lon, dep / 1e3]).T)
 
     # Rotate
-    if args.medium == "solid":
+    if args.medium == "solid" or True:  # Fluid also uses U
         print("Rotating...")
         fr_frame = points.form_RTZ_frame(st_lat, st_lon)
         to_frame = points.form_RTZ_frame(ulvz_lat, ulvz_lon)

@@ -5,7 +5,7 @@ EXCLUDE_UNGROUPED             1
 GROUPED_STATIONS              3
 GROUP_NAMES                   ARRAY EXTRAPOLATION_SOLID EXTRAPOLATION_FLUID
 MEDIUM_IN_FLUID               0 0 1
-CHANNEL                       U U X
+CHANNEL                       U U U
 SAMPLE_INTERVAL               __SAMPLE__ __SAMPLE__ __SAMPLE__
 DUMP_INTERVAL                 2000 2000 2000
 WCS                           SPZ SPZ SPZ

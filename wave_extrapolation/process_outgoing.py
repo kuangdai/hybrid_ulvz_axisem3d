@@ -61,7 +61,7 @@ if __name__ == "__main__":
     points = GeoPoints(np.array([lat, lon, dep / 1e3]).T, phi_under_ulvz.reshape(-1))
 
     # Rotate
-    if args.medium == "solid":
+    if args.medium == "solid" or True:
         print("Rotating...")
         fr_frame = points.form_spz_frame(meta["ulvz_lat"], meta["ulvz_lon"])
         fr_frame = fr_frame.reshape(len(grid_dist_extrap),

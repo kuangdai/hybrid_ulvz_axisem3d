@@ -227,7 +227,7 @@ list_of_station_groups:
               #      3) (1, 2, 3) are determined by coordinate_frame
               #      4) using U means [U1, U2, U3], and similarly for G, E, S
               #         and R; duplicated channels are automatically removed
-              channels: [ X ]
+              channels: [U]
           # temporal sampling
           temporal:
               # what: sampling period

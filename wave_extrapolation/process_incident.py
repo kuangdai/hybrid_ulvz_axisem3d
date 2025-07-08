@@ -84,8 +84,11 @@ if __name__ == "__main__":
 
     # Read data
     print("Reading raw data...")
-    ds = AxiSEM3DSyntheticsLoader(in_path / f"04_solve_prem/output/stations/INCIDENT_{args.medium.upper()}",
-                                  in_path / f"02_stations/STATIONS_INCIDENT_{args.medium.upper()}")
+    medium_u = args.medium
+    if args.medium == "fluid":
+        medium_u = "fluid_u"
+    ds = AxiSEM3DSyntheticsLoader(in_path / f"04_solve_prem/output/stations/INCIDENT_{medium_u.upper()}",
+                                  in_path / f"02_stations/STATIONS_INCIDENT_{medium_u.upper()}")
     t0_id = np.searchsorted(ds.times, args.t0)
     t1_id = np.searchsorted(ds.times, args.t1)
     extrap_data = ds.get(start_time=t0_id, end_time=t1_id, time_interval=args.time_interval)
@@ -112,7 +115,7 @@ if __name__ == "__main__":
     extrap_data = dist_azim_interp(extrap_data, grid_dist_incident, dist_azim, args.batch_size)
 
     # Rotate
-    if args.medium == "solid":
+    if args.medium == "solid" or True:  # Now fluid also uses U
         print("Rotating...")
         fr_frame = points.form_spz_frame(meta["event_lat"], meta["event_lon"])
         fr_frame = fr_frame.reshape(len(grid_dist_extrap),

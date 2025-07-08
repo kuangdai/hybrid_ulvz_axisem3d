@@ -4,7 +4,7 @@ import sys
 
 import numpy as np
 
-from brick import SolidElement, FluidElement
+from brick import SolidElement
 from geodetic import GeoPoints
 from prem import PREM
 
@@ -30,29 +30,30 @@ def build_solid_element(node_indices, face_index, name):
     element.save_to(f"{save_dir}/{medium}_elements/{name}.pt")
 
 
-def build_fluid_element(node_indices, face_index, name):
-    node_xyz, rho_n = [], []
-
-    for t_, p_, d_ in node_indices:
-        r = R_earth - depths[d_]
-        th = thetas[t_]
-        ph = phis[p_]
-
-        x = r * np.sin(th) * np.cos(ph)
-        y = r * np.sin(th) * np.sin(ph)
-        z = r * np.cos(th)
-        node_xyz.append([x, y, z])
-
-        kappa, rho = prem.query_fluid(r)
-        rho_n.append(rho)
-
-    element = FluidElement(node_xyz, rho_n, gamma_face_index=face_index)
-    element.save_to(f"{save_dir}/{medium}_elements/{name}.pt")
+# def build_fluid_element(node_indices, face_index, name):
+#     node_xyz, rho_n = [], []
+#
+#     for t_, p_, d_ in node_indices:
+#         r = R_earth - depths[d_]
+#         th = thetas[t_]
+#         ph = phis[p_]
+#
+#         x = r * np.sin(th) * np.cos(ph)
+#         y = r * np.sin(th) * np.sin(ph)
+#         z = r * np.cos(th)
+#         node_xyz.append([x, y, z])
+#
+#         kappa, rho = prem.query_fluid(r)
+#         rho_n.append(rho)
+#
+#     element = FluidElement(node_xyz, rho_n, gamma_face_index=face_index)
+#     element.save_to(f"{save_dir}/{medium}_elements/{name}.pt")
 
 
 if __name__ == "__main__":
     medium = sys.argv[1]
-    build_element = build_solid_element if medium == "solid" else build_fluid_element
+    # build_element = build_solid_element if medium == "solid" else build_fluid_element
+    build_element = build_solid_element  # 全部视为 Solid 单元
 
     # 路径设置
     grid_path = '../wave_extrapolation/outputs'

@@ -7,6 +7,7 @@ import numpy as np
 from mpl_toolkits.basemap import Basemap
 
 from geodetic import GeoPoints
+from utils import replace_in_file
 
 
 def coords_to_grids(*coords):
@@ -197,12 +198,18 @@ if __name__ == "__main__":
     to_station_file(grid_depth_fluid, 'fluid', grid_dist, grid_azim, e_lat, e_lon, "INCIDENT")
 
     # final combination
+    replace_in_file(out_dir / 'STATIONS_INCIDENT_FLUID', {
+        "INCIDENT_FLUID": "INCIDENT_FLUID_U"
+    }, dest=out_dir / 'STATIONS_INCIDENT_FLUID_U')
+
     fout = open(out_dir / 'STATIONS_ARRAY_INCIDENT', 'w')
     fin = open(out_dir / 'STATIONS_ARRAY')
     fout.write(fin.read())
     fin = open(out_dir / 'STATIONS_INCIDENT_SOLID')
     fout.write(fin.read())
     fin = open(out_dir / 'STATIONS_INCIDENT_FLUID')
+    fout.write(fin.read())
+    fin = open(out_dir / 'STATIONS_INCIDENT_FLUID_U')
     fout.write(fin.read())
     fout.close()
 
@@ -303,7 +310,8 @@ if __name__ == "__main__":
         grid_dist_outer = np.linspace(dist_inner, dist_outer, n_outer)
         grid_dist_outer[0] += tolerance_angle
         grid_dist_anim_top = np.concatenate((grid_dist_inner, grid_dist_outer))
-        grid_azim_anim_top = np.radians(np.linspace(0, 360, int(np.ceil(2 * args_mesh['nu_to_use'] + 1) * P / 4))[:-1] * 1.)
+        grid_azim_anim_top = np.radians(
+            np.linspace(0, 360, int(np.ceil(2 * args_mesh['nu_to_use'] + 1) * P / 4))[:-1] * 1.)
         grid_azim_anim_top += e_azim
         to_station_file([2891.], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
         to_station_file([2891.], 'fluid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
@@ -350,7 +358,7 @@ if __name__ == "__main__":
 
         # also need more incident
         dist_half_range = (args_mesh['NEX_U'] + 2) * dist_delta_elem * (
-                    1 + args['ulvz_animation']['top_view_right_margin'])
+                1 + args['ulvz_animation']['top_view_right_margin'])
         n_dist = int(
             np.ceil((args_mesh['NEX_U'] + 2) * 2 * 4 * (1 + args['ulvz_animation']['top_view_right_margin']))) + 1
         grid_dist_anim_incident = np.linspace(u_dist - dist_half_range,
