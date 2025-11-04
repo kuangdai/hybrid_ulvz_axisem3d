@@ -158,19 +158,19 @@ list(REMOVE_DUPLICATES _lib_env)
 if(METIS_LIBDIR)
 set(METIS_metis_LIBRARY "METIS_metis_LIBRARY-NOTFOUND")
 find_library(METIS_metis_LIBRARY
-NAMES metis
+NAMES metis_crayclang metis_crayclang_mp
 HINTS ${METIS_LIBDIR})
 else()
 if(METIS_DIR)
 set(METIS_metis_LIBRARY "METIS_metis_LIBRARY-NOTFOUND")
 find_library(METIS_metis_LIBRARY
-NAMES metis
+NAMES metis_crayclang metis_crayclang_mp
 HINTS ${METIS_DIR}
 PATH_SUFFIXES lib lib32 lib64)
 else()
 set(METIS_metis_LIBRARY "METIS_metis_LIBRARY-NOTFOUND")
 find_library(METIS_metis_LIBRARY
-NAMES metis
+NAMES metis_crayclang metis_crayclang_mp
 HINTS ${_lib_env})
 endif()
 endif()

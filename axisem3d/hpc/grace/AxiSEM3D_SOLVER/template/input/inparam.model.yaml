@@ -1,0 +1,49 @@
+#
+#  inparam.model.yaml
+#  AxiSEM3D
+#
+#  Created by Kuangdai Leng on 8/31/19.
+#  Copyright © 2019 Kuangdai Leng. All rights reserved.
+#
+
+#  This is an AxiSEM3D input parameter file for
+#  Model
+
+
+############################# 1D model #############################
+model1D:
+    # what: Exodus mesh file created by salvus mesher
+    # type: string
+    exodus_mesh: AxiSEM_prem_ani_150.e
+
+
+############################# geodesy #############################
+geodesy:
+    # what: planetary radius at the mesh's top boundary
+    # type: string / number
+    # choices: AS_IS / a number (m)
+    # note: 1) the mesh will be translated vertically based on
+    #          this parameter such that the center of the planet
+    #          is located at the mesh origin
+    #       2) required for using the geographic coordinates to
+    #          locate sources, receivers and 3D heterogeneities
+    #       3) use AS_IS if translation is not needed
+    radius_mesh_top: AS_IS
+    
+    # what: planetary radius defining depth origin
+    # type: string / number
+    # choices: MESH_TOP / SOLID_TOP / a number (m)
+    # note: 1) this parameter defines the depth coordinate for
+    #          sources, receivers and 3D heterogeneities
+    #       2) MESH_TOP:  depth = 0 at the top of the mesh
+    #          SOLID_TOP: depth = 0 at the top of the uppermost
+    #                     solid layer
+    radius_depth_zero: SOLID_TOP
+    
+    # what: flattening on the surface
+    # type: string / number
+    # choices: SPHERE / WGS84 / GRS80 / SPECFEM3D_GLOBE / a number
+    # note: 1) 0 for a perfect sphere; ~0.0033 for Earth
+    #       2) flattening affects the coordinate transform between
+    #          latitude (geographic) and θ (geocentric)
+    flattening: SPHERE

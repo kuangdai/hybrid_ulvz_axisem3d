@@ -1,0 +1,12 @@
+//
+//  TODO.txt
+//  AxiSEM3D
+//
+//  Created by Kuangdai Leng on 2/21/19.
+//  Copyright © 2019 Kuangdai Leng. All rights reserved.
+//
+
+//  TODO list
+1) Learning
+2) injection fluid, pressure delta
+3)
