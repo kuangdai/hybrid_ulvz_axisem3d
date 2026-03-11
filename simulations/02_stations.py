@@ -313,7 +313,11 @@ if __name__ == "__main__":
         grid_azim_anim_top = np.radians(
             np.linspace(0, 360, int(np.ceil(2 * args_mesh['nu_to_use'] + 1) * P / 4))[:-1] * 1.)
         grid_azim_anim_top += e_azim
-        to_station_file([2891.], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
+        shifts = args['ulvz_animation'].get('top_view_up_shifts', None)
+        if shifts is None:
+            shifts = [0]
+        to_station_file([s + 2891. for s in shifts], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon,
+                        "ANIM_TOP")
         to_station_file([2891.], 'fluid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
         np.savetxt(out_dir / 'grid_dist_anim_top.txt', grid_dist_anim_top)
         np.savetxt(out_dir / 'grid_azim_anim_top.txt', grid_azim_anim_top)

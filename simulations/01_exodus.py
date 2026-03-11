@@ -43,6 +43,9 @@ if __name__ == "__main__":
           f'--basic.model {bm_file} --basic.period {T:.1f} ' \
           f'--output_filename {mesh_file} --overwrite_file ' \
           f'--advanced.elements_per_wavelength {epw}'
+    colat = args['mesh'].get('colat', None)
+    if colat is not None:
+        cmd += f' --chunk2D.max_colaitude={colat}'
     os.system(cmd)
 
     ##########################
