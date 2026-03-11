@@ -316,7 +316,7 @@ if __name__ == "__main__":
         shifts = args['ulvz_animation'].get('top_view_up_shifts', None)
         if shifts is None:
             shifts = [0]
-        to_station_file([s + 2891. for s in shifts], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon,
+        to_station_file([2891. - s for s in shifts], 'solid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon,
                         "ANIM_TOP")
         to_station_file([2891.], 'fluid', grid_dist_anim_top, grid_azim_anim_top, u_lat, u_lon, "ANIM_TOP")
         np.savetxt(out_dir / 'grid_dist_anim_top.txt', grid_dist_anim_top)
