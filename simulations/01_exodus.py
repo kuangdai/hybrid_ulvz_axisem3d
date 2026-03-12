@@ -45,7 +45,7 @@ if __name__ == "__main__":
           f'--advanced.elements_per_wavelength {epw}'
     colat = args['mesh'].get('colat', None)
     if colat is not None:
-        cmd += f' --chunk2D.max_colaitude={colat}'
+        cmd += f' --chunk2D.max_colatitude={colat}'
     os.system(cmd)
 
     ##########################
